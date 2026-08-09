@@ -10,6 +10,12 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <style>
+  @font-face{
+    font-family:'Nofex';
+    src:url('Nofex.otf') format('opentype');
+    font-weight:400 800;
+    font-display:swap;
+  }
   :root{
     --bg:#0D1433; --card:#171F55; --card2:#1e2a63; --text:#eef0f8; --muted:#8b93bf;
     --border:#274272; --accent:#6C90C3;
@@ -20,23 +26,26 @@
     --border:#D7DEF2; --accent:#274272;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  body{margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); padding-bottom:90px; transition:background .2s,color .2s;}
-  header{padding:20px 16px 8px; position:sticky; top:0; background:var(--bg); z-index:10; display:flex; justify-content:space-between; align-items:flex-start;}
-  h1{font-size:22px; margin:0 0 4px; letter-spacing:.3px;}
+  body{margin:0; font-family:'Nofex',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); padding-bottom:120px; transition:background .2s,color .2s;}
+  header{padding:20px 16px 8px; position:sticky; top:0; background:var(--bg); z-index:10; display:flex; justify-content:space-between; align-items:center;}
+  h1{font-size:24px; margin:0 0 2px; letter-spacing:.3px; font-weight:700;}
   .sub{color:var(--muted); font-size:13px;}
-  .theme-btn{background:var(--card); border:1px solid var(--border); border-radius:50%; width:38px; height:38px; font-size:16px; color:var(--text);}
-  .tabs{display:flex; gap:8px; overflow-x:auto; padding:12px 16px; scrollbar-width:none;}
-  .tabs::-webkit-scrollbar{display:none;}
-  .tab{flex:0 0 auto; padding:8px 14px; border-radius:20px; background:var(--card); color:var(--muted); font-size:14px; border:1px solid var(--border); white-space:nowrap; transition:.15s;}
-  .tab.active{color:white; border-color:transparent;}
-  .tab[data-type="quest"].active{background:var(--c-quest);}
-  .tab[data-type="habit"].active{background:var(--c-habit); color:#241a02;}
-  .tab[data-type="book"].active{background:var(--c-book); color:#022019;}
-  .tab[data-type="note"].active{background:var(--c-note);}
-  .tab[data-type="stats"].active{background:var(--accent);}
+  .header-actions{display:flex; gap:8px;}
+  .icon-btn{background:var(--card); border:1px solid var(--border); border-radius:50%; width:42px; height:42px; font-size:17px; color:var(--text); display:flex; align-items:center; justify-content:center;}
+  .theme-btn{background:var(--card); border:1px solid var(--border); border-radius:50%; width:42px; height:42px; font-size:16px; color:var(--text);}
+  .tabs{display:none;}
+  .bottom-nav{position:fixed; left:16px; right:16px; bottom:18px; z-index:20; background:var(--card); border:1px solid var(--border); border-radius:28px; box-shadow:0 12px 30px rgba(0,0,0,.35); display:flex; align-items:center; justify-content:space-around; padding:10px 8px; height:64px;}
+  .nav-item{background:none; border:none; display:flex; flex-direction:column; align-items:center; gap:2px; color:var(--muted); font-size:10px; flex:1;}
+  .nav-item .ic{font-size:19px;}
+  .nav-item.active{color:var(--nav-color, var(--accent));}
+  .nav-item[data-type="quest"].active{--nav-color:var(--c-quest);}
+  .nav-item[data-type="habit"].active{--nav-color:var(--c-habit);}
+  .nav-item[data-type="book"].active{--nav-color:var(--c-book);}
+  .nav-item[data-type="note"].active{--nav-color:var(--c-note);}
+  .nav-add{position:relative; top:-26px; width:56px; height:56px; border-radius:50%; background:var(--accent); color:#fff; border:5px solid var(--bg); font-size:26px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(108,144,195,.5); flex:0 0 auto;}
   main{padding:0 16px;}
   .compass-row{display:flex; gap:10px; margin-bottom:20px; overflow-x:auto;}
-  .compass-card{flex:1; min-width:150px; border-radius:16px; padding:14px; position:relative; overflow:hidden; min-height:110px; border:1px solid var(--border);}
+  .compass-card{flex:1; min-width:150px; border-radius:26px; padding:16px; position:relative; overflow:hidden; min-height:120px; border:1px solid var(--border);}
   .compass-card.has-cover{color:#fff;}
   .compass-card .cover-bg{position:absolute; inset:0; background-size:cover; background-position:center; opacity:.55; z-index:0;}
   .compass-card .cover-grad{position:absolute; inset:0; z-index:0;}
@@ -52,7 +61,7 @@
   .bar-fill{height:100%; background:var(--c-book); border-radius:4px; transition:width .4s ease;}
   .pct{font-size:12px; color:var(--muted);}
   .compass-card.has-cover .pct{color:rgba(255,255,255,.75);}
-  .card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:10px; border-left:4px solid var(--type-color, var(--border));}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:22px; padding:16px; margin-bottom:12px; border-left:5px solid var(--type-color, var(--border));}
   .card-row{display:flex; align-items:center; gap:12px;}
   .check{width:28px; height:28px; border-radius:50%; border:2px solid var(--muted); flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-size:15px; transition:transform .15s;}
   .check.pop{animation:pop .35s ease;}
@@ -64,9 +73,9 @@
   .progress-input{display:flex; align-items:center; gap:6px; margin-top:8px;}
   .progress-input input{width:60px; background:var(--card2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:4px 8px; font-size:13px;}
   .goal-chip{display:inline-block; margin-top:6px; font-size:11px; background:var(--card2); color:var(--muted); padding:3px 8px; border-radius:10px;}
-  .fab{position:fixed; bottom:24px; right:20px; width:56px; height:56px; border-radius:50%; background:var(--accent); color:white; font-size:28px; border:none; box-shadow:0 6px 20px rgba(108,123,255,.4); z-index:20;}
+  .streak-chip{display:inline-block; margin-top:4px; font-size:12px; color:var(--c-habit); font-weight:600;}
   .modal-bg{position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:flex-end; z-index:30;}
-  .modal{background:var(--card); width:100%; border-radius:20px 20px 0 0; padding:20px; max-height:80vh; overflow-y:auto;}
+  .modal{background:var(--card); width:100%; border-radius:28px 28px 0 0; padding:22px; max-height:80vh; overflow-y:auto;}
   .modal h2{margin-top:0;}
   input,textarea,select{width:100%; background:var(--card2); border:1px solid var(--border); color:var(--text); padding:10px; border-radius:10px; font-size:15px; margin-bottom:10px; font-family:inherit;}
   button.primary{width:100%; padding:12px; background:var(--accent); color:white; border:none; border-radius:12px; font-size:15px; font-weight:600;}
@@ -88,10 +97,12 @@
 <div id="authScreen" class="login-wrap" style="display:none;">
   <div class="login-box">
     <h1>Путь</h1>
-    <p class="sub">Дневник квестов, привычек и книг</p>
-    <input id="emailInput" type="email" placeholder="Твоя почта" style="margin-top:24px;">
-    <button class="primary" onclick="sendMagicLink()">Войти по почте</button>
-    <p id="authMsg" class="sub" style="margin-top:12px;"></p>
+    <p class="sub" id="authSubtitle">Войди, чтобы продолжить</p>
+    <input id="emailInput" type="email" placeholder="Почта" style="margin-top:24px;">
+    <input id="passwordInput" type="password" placeholder="Пароль">
+    <button class="primary" id="authMainBtn" onclick="signIn()">Войти</button>
+    <button class="ghost" onclick="toggleAuthMode()" id="authSwitchBtn">Нет аккаунта? Зарегистрироваться</button>
+    <p id="authMsg" class="sub" style="margin-top:8px;"></p>
   </div>
 </div>
 
@@ -163,13 +174,36 @@ function showAuth(){
   document.getElementById('fab').style.display = 'none';
 }
 
-async function sendMagicLink(){
+let authMode = 'signin';
+
+function toggleAuthMode(){
+  authMode = authMode === 'signin' ? 'signup' : 'signin';
+  document.getElementById('authMainBtn').textContent = authMode === 'signin' ? 'Войти' : 'Зарегистрироваться';
+  document.getElementById('authMainBtn').setAttribute('onclick', authMode === 'signin' ? 'signIn()' : 'signUp()');
+  document.getElementById('authSwitchBtn').textContent = authMode === 'signin' ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти';
+  document.getElementById('authMsg').textContent = '';
+}
+
+async function signIn(){
   const email = document.getElementById('emailInput').value.trim();
-  if(!email) return;
+  const password = document.getElementById('passwordInput').value;
   const msg = document.getElementById('authMsg');
-  msg.textContent = "Отправляю письмо...";
-  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
-  msg.textContent = error ? "Ошибка: " + error.message : "Проверь почту и открой ссылку из письма ✉️";
+  if(!email || !password){ msg.textContent = 'Заполни почту и пароль'; return; }
+  msg.textContent = 'Вхожу...';
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  msg.textContent = error ? 'Ошибка: ' + error.message : '';
+}
+
+async function signUp(){
+  const email = document.getElementById('emailInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+  const msg = document.getElementById('authMsg');
+  if(!email || !password){ msg.textContent = 'Заполни почту и пароль'; return; }
+  if(password.length < 6){ msg.textContent = 'Пароль минимум 6 символов'; return; }
+  msg.textContent = 'Создаю аккаунт...';
+  const { data, error } = await sb.auth.signUp({ email, password });
+  if(error){ msg.textContent = 'Ошибка: ' + error.message; return; }
+  if(data.session){ msg.textContent = ''; } else { msg.textContent = 'Проверь почту — нужно подтвердить регистрацию один раз'; }
 }
 
 async function showApp(){
@@ -255,6 +289,20 @@ function renderList(){
         ${goal ? `<div class="goal-chip">🎯 к цели: ${escapeHtml(goal.title||'без названия')}</div>` : ''}
       </div>`;
     }
+    if(e.type === 'habit'){
+      const today = new Date().toISOString().slice(0,10);
+      const doneToday = e.last_done_date === today;
+      return `<div class="card" style="--type-color:${color}">
+        <div class="card-row">
+          <div class="check ${doneToday?'done':''}" onclick='toggleHabit(${JSON.stringify(e.id)}, this)'>${doneToday?'✓':''}</div>
+          <div style="flex:1;">
+            <div class="card-title">${escapeHtml(e.title)}</div>
+            <div class="streak-chip">${e.streak>0 ? `🔥 ${e.streak} дн. подряд` : 'начни сегодня'}</div>
+          </div>
+          <button class="ghost" style="width:auto; padding:4px 10px;" onclick="deleteEntry('${e.id}')">✕</button>
+        </div>
+      </div>`;
+    }
     return `<div class="card" style="--type-color:${color}">
       <div class="card-row">
         <div class="check ${e.done?'done':''}" onclick="toggleDone('${e.id}', ${!e.done}, this)">${e.done?'✓':''}</div>
@@ -274,7 +322,8 @@ function renderStats(list){
   const inMonth = (d) => new Date(d) >= monthStart;
 
   const questsDone = entries.filter(e=>e.type==='quest' && e.done && inMonth(e.updated_at)).length;
-  const habitsDone = entries.filter(e=>e.type==='habit' && e.done && inMonth(e.updated_at)).length;
+  const today = new Date().toISOString().slice(0,10);
+  const habitsDone = entries.filter(e=>e.type==='habit' && e.last_done_date === today).length;
   const pagesRead = entries.filter(e=>e.type==='book').reduce((s,e)=>s+(Number(e.progress_current)||0),0);
   const notesDone = entries.filter(e=>e.type==='note' && e.done && inMonth(e.updated_at)).length;
 
@@ -287,7 +336,7 @@ function renderStats(list){
       </div>
       <div class="stat-card" style="border-left:4px solid var(--c-habit)">
         <div class="stat-num">${habitsDone}</div>
-        <div class="stat-label">привычек отмечено</div>
+        <div class="stat-label">привычек выполнено сегодня</div>
       </div>
       <div class="stat-card" style="border-left:4px solid var(--c-book)">
         <div class="stat-num">${pagesRead}</div>
@@ -306,6 +355,25 @@ function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s||
 async function toggleDone(id, done, el){
   if(el){ el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'), 350); }
   await sb.from('entries').update({done, updated_at: new Date().toISOString()}).eq('id', id);
+  await loadEntries();
+  setTimeout(renderList, 120);
+}
+
+async function toggleHabit(id, el){
+  const e = entries.find(x=>x.id===id);
+  const today = new Date().toISOString().slice(0,10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+
+  if(el){ el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'), 350); }
+
+  if(e.last_done_date === today){
+    const newStreak = Math.max(0, (e.streak||1) - 1);
+    const newLastDate = newStreak > 0 ? yesterday : null;
+    await sb.from('entries').update({streak:newStreak, last_done_date:newLastDate}).eq('id', id);
+  } else {
+    const newStreak = e.last_done_date === yesterday ? (e.streak||0)+1 : 1;
+    await sb.from('entries').update({streak:newStreak, last_done_date:today}).eq('id', id);
+  }
   await loadEntries();
   setTimeout(renderList, 120);
 }
