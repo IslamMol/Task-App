@@ -32,6 +32,7 @@
   .sub{color:var(--muted); font-size:13px;}
   .header-actions{display:flex; gap:8px;}
   .icon-btn{background:var(--card); border:1px solid var(--border); border-radius:50%; width:42px; height:42px; font-size:17px; color:var(--text); display:flex; align-items:center; justify-content:center;}
+  .icon-btn.active{background:var(--accent); border-color:var(--accent);}
   .theme-btn{background:var(--card); border:1px solid var(--border); border-radius:50%; width:42px; height:42px; font-size:16px; color:var(--text);}
   .tabs{display:none;}
   .bottom-nav{position:fixed; left:16px; right:16px; bottom:18px; z-index:20; background:var(--card); border:1px solid var(--border); border-radius:28px; box-shadow:0 12px 30px rgba(0,0,0,.35); display:flex; align-items:center; justify-content:space-around; padding:10px 8px; height:64px;}
@@ -112,23 +113,24 @@
       <h1>Путь</h1>
       <div class="sub" id="userEmail"></div>
     </div>
-    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="switchTab('stats')" id="statsBtn">📊</button>
+      <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+    </div>
   </header>
 
   <div class="compass-row" id="compassRow"></div>
 
-  <div class="tabs">
-    <div class="tab active" data-type="quest" onclick="switchTab('quest')">Квесты</div>
-    <div class="tab" data-type="habit" onclick="switchTab('habit')">Привычки</div>
-    <div class="tab" data-type="book" onclick="switchTab('book')">Книги</div>
-    <div class="tab" data-type="note" onclick="switchTab('note')">Дела</div>
-    <div class="tab" data-type="stats" onclick="switchTab('stats')">Статистика</div>
-  </div>
-
   <main id="list"></main>
 </div>
 
-<button class="fab" id="fab" onclick="openAdd()" style="display:none;">+</button>
+<div class="bottom-nav" id="bottomNav" style="display:none;">
+  <button class="nav-item active" data-type="quest" onclick="switchTab('quest')"><span class="ic">🗡️</span>Квесты</button>
+  <button class="nav-item" data-type="habit" onclick="switchTab('habit')"><span class="ic">🔥</span>Привычки</button>
+  <button class="nav-add" id="fab" onclick="openAdd()">+</button>
+  <button class="nav-item" data-type="book" onclick="switchTab('book')"><span class="ic">📚</span>Книги</button>
+  <button class="nav-item" data-type="note" onclick="switchTab('note')"><span class="ic">✅</span>Дела</button>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -209,9 +211,7 @@ async function signUp(){
 async function showApp(){
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('appScreen').style.display = 'block';
-  document.getElementById('fab').style.display = 'flex';
-  document.getElementById('fab').style.alignItems = 'center';
-  document.getElementById('fab').style.justifyContent = 'center';
+  document.getElementById('bottomNav').style.display = 'flex';
   document.getElementById('userEmail').textContent = session.user.email;
   applyTheme();
   await ensureCompass();
@@ -254,7 +254,8 @@ function renderCompass(){
 
 function switchTab(type){
   currentTab = type;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.type===type));
+  document.querySelectorAll('.nav-item').forEach(t=>t.classList.toggle('active', t.dataset.type===type));
+  document.getElementById('statsBtn').classList.toggle('active', type==='stats');
   document.getElementById('fab').style.display = type==='stats' ? 'none' : 'flex';
   renderList();
 }
