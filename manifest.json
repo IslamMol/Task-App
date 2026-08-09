@@ -1,0 +1,11 @@
+{
+  "name": "Путь — жизненные квесты",
+  "short_name": "Путь",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "icons": [
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
