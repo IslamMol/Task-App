@@ -4,10 +4,12 @@ import { TYPE_COLOR, CATEGORY_EMOJI, TAB_ORDER } from './constants.js';
 import { escapeHtml } from './utils/dom.js';
 import { todayStr, yesterdayStr } from './utils/date.js';
 import { renderStats } from './stats.js';
+import { cacheEntries } from './db/indexeddb.js';
 
 export async function loadEntries(){
   const { data } = await sb.from('entries').select('*').order('created_at', {ascending:false});
   state.entries = data || [];
+  if(state.entries.length){ cacheEntries(state.entries); }
 }
 
 export function categoryEmoji(cat){

@@ -1,4 +1,4 @@
-const CACHE = 'put-v2';
+const CACHE = 'put-v3';
 const FILES = [
   './index.html', './manifest.json', './icon.png',
   './src/app.js', './src/auth.js', './src/compass.js', './src/entries.js',
@@ -6,6 +6,7 @@ const FILES = [
   './src/constants.js',
   './src/services/supabase.js',
   './src/utils/date.js', './src/utils/dom.js',
+  './src/db/indexeddb.js',
 ];
 
 self.addEventListener('install', e => {

@@ -1,16 +1,22 @@
 import { sb } from './services/supabase.js';
 import { state } from './state.js';
 import { escapeHtml } from './utils/dom.js';
+import { cacheCompass, cacheCompassEntries } from './db/indexeddb.js';
 
 export async function ensureCompass(){
   const { data } = await sb.from('compass').select('*').order('created_at');
-  if(data && data.length >= 3){ state.compassItems = data; return; }
+  if(data && data.length >= 3){
+    state.compassItems = data;
+    cacheCompass(data);
+    return;
+  }
   const kinds = [['dream','Мечта'],['goal','Цель'],['path','Путь']];
   const existing = (data || []).map(d => d.kind);
   const toCreate = kinds.filter(k => !existing.includes(k[0])).map(k => ({kind:k[0], title:k[1], progress_percent:0}));
   if(toCreate.length){ await sb.from('compass').insert(toCreate); }
   const r2 = await sb.from('compass').select('*').order('created_at');
   state.compassItems = r2.data || [];
+  if(state.compassItems.length){ cacheCompass(state.compassItems); }
 }
 
 export function renderCompass(){
@@ -37,6 +43,7 @@ export async function openCompass(id){
 
   if(c.kind === 'path'){
     const { data: journal } = await sb.from('compass_entries').select('*').eq('compass_id', id).order('created_at', {ascending:false});
+    if(journal && journal.length){ cacheCompassEntries(id, journal); }
     modal.innerHTML = `
       <div class="modal">
         <h2>Путь</h2>
