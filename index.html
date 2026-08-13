@@ -24,7 +24,11 @@
   header{padding:20px 16px 8px; position:sticky; top:0; background:var(--bg); z-index:10; display:flex; justify-content:space-between; align-items:center;}
   h1{font-size:24px; margin:0 0 2px; letter-spacing:.3px; font-weight:700;}
   .sub{color:var(--muted); font-size:13px;}
-  .header-actions{display:flex; gap:8px;}
+  .header-actions{display:flex; gap:8px; align-items:center;}
+  .sync-dot{width:8px; height:8px; border-radius:50%; background:#5FC9A8; transition:background .3s; flex:0 0 auto;}
+  .sync-dot.syncing{background:#E8B75D;}
+  .sync-dot.offline{background:#8b93bf;}
+  .sync-dot.error{background:#E2735E;}
   .icon-btn{background:var(--card); border:1px solid var(--border); border-radius:50%; width:42px; height:42px; font-size:17px; color:var(--text); display:flex; align-items:center; justify-content:center;}
   .icon-btn.active{background:var(--accent); border-color:var(--accent);}
   .theme-btn{background:var(--card); border:1px solid var(--border); border-radius:50%; width:42px; height:42px; font-size:16px; color:var(--text);}
@@ -112,6 +116,7 @@
       <div class="sub" id="userEmail"></div>
     </div>
     <div class="header-actions">
+      <span class="sync-dot" id="syncDot" title="Синхронизация"></span>
       <button class="icon-btn" onclick="switchTab('stats')" id="statsBtn">📊</button>
       <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
     </div>
