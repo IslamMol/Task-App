@@ -4,12 +4,21 @@ import { TYPE_COLOR, CATEGORY_EMOJI, TAB_ORDER } from './constants.js';
 import { escapeHtml } from './utils/dom.js';
 import { todayStr, yesterdayStr } from './utils/date.js';
 import { renderStats } from './stats.js';
-import { cacheEntries } from './db/indexeddb.js';
+import { cacheEntries, removeEntryFromCache, readEntriesFromCache } from './db/indexeddb.js';
+import { enqueue } from './db/sync.js';
 
 export async function loadEntries(){
-  const { data } = await sb.from('entries').select('*').order('created_at', {ascending:false});
-  state.entries = data || [];
-  if(state.entries.length){ cacheEntries(state.entries); }
+  try {
+    const { data, error } = await sb.from('entries').select('*').order('created_at', {ascending:false});
+    if(error) throw error;
+    state.entries = data || [];
+    if(state.entries.length){ cacheEntries(state.entries); }
+  } catch (err) {
+    // Нет сети (или Supabase недоступен) — показываем то, что успели
+    // сохранить локально в прошлый раз, вместо пустого экрана.
+    console.warn('Не удалось загрузить entries с сервера, читаю локальный кэш', err);
+    state.entries = await readEntriesFromCache();
+  }
 }
 
 export function categoryEmoji(cat){
@@ -71,40 +80,61 @@ export function renderList(){
   if(state.currentTab === 'stats'){ renderStats(document.getElementById('statsView')); }
 }
 
+// --- Ниже: все изменяющие операции идут по одной схеме (local-first) ---
+// 1. Меняем состояние в памяти (state.entries) — мгновенно.
+// 2. Отражаем в интерфейсе — не дожидаясь сети.
+// 3. Пишем в IndexedDB — переживёт закрытие приложения офлайн.
+// 4. Кладём в очередь синхронизации — Sync Manager сам отправит,
+//    как только будет соединение, с повторными попытками при сбоях.
+
 export async function toggleDone(id, done, el){
   if(el){ el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'), 350); }
-  await sb.from('entries').update({done, updated_at: new Date().toISOString()}).eq('id', id);
-  await loadEntries();
-  setTimeout(renderList, 120);
+  const e = state.entries.find(x => x.id === id);
+  if(!e) return;
+  e.done = done;
+  e.updated_at = new Date().toISOString();
+  renderList();
+  cacheEntries([e]);
+  enqueue('entries', 'update', { id, done: e.done, updated_at: e.updated_at });
 }
 
 export async function toggleHabit(id, el){
   const e = state.entries.find(x => x.id === id);
+  if(!e) return;
   const today = todayStr();
   const yesterday = yesterdayStr();
 
   if(el){ el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'), 350); }
 
+  let patch;
   if(e.last_done_date === today){
     const newStreak = Math.max(0, (e.streak||1) - 1);
-    const newLastDate = newStreak > 0 ? yesterday : null;
-    await sb.from('entries').update({streak:newStreak, last_done_date:newLastDate}).eq('id', id);
+    patch = { streak: newStreak, last_done_date: newStreak > 0 ? yesterday : null };
   } else {
     const newStreak = e.last_done_date === yesterday ? (e.streak||0)+1 : 1;
-    await sb.from('entries').update({streak:newStreak, last_done_date:today}).eq('id', id);
+    patch = { streak: newStreak, last_done_date: today };
   }
-  await loadEntries();
-  setTimeout(renderList, 120);
+  Object.assign(e, patch);
+  renderList();
+  cacheEntries([e]);
+  enqueue('entries', 'update', { id, ...patch });
 }
 
 export async function updatePage(id, val){
-  await sb.from('entries').update({progress_current: Number(val), updated_at: new Date().toISOString()}).eq('id', id);
-  await loadEntries(); renderList();
+  const e = state.entries.find(x => x.id === id);
+  if(!e) return;
+  e.progress_current = Number(val);
+  e.updated_at = new Date().toISOString();
+  renderList();
+  cacheEntries([e]);
+  enqueue('entries', 'update', { id, progress_current: e.progress_current, updated_at: e.updated_at });
 }
 
 export async function deleteEntry(id){
-  await sb.from('entries').delete().eq('id', id);
-  await loadEntries(); renderList();
+  state.entries = state.entries.filter(e => e.id !== id);
+  renderList();
+  removeEntryFromCache(id);
+  enqueue('entries', 'delete', { id });
 }
 
 export function openAdd(){
@@ -129,7 +159,16 @@ export function openAdd(){
 export async function saveNew(isBook){
   const title = document.getElementById('newTitle').value.trim();
   if(!title) return;
-  const row = { type: state.currentTab, title, user_id: state.session.user.id };
+  const now = new Date().toISOString();
+  const row = {
+    id: crypto.randomUUID(),
+    type: state.currentTab,
+    title,
+    user_id: state.session.user.id,
+    created_at: now,
+    updated_at: now,
+    done: false,
+  };
   if(isBook){
     row.progress_total = Number(document.getElementById('newTotal').value) || null;
     row.progress_current = 0;
@@ -139,7 +178,9 @@ export async function saveNew(isBook){
     const cat = document.getElementById('newCat');
     if(cat) row.category = cat.value.trim();
   }
-  await sb.from('entries').insert(row);
+  state.entries.unshift(row);
   document.querySelector('.modal-bg').remove();
-  await loadEntries(); renderList();
+  renderList();
+  cacheEntries([row]);
+  enqueue('entries', 'insert', row);
 }
