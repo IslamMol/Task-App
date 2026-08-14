@@ -1,6 +1,6 @@
 import { state } from '../state.js';
 import { sb } from '../services/supabase.js';
-import { getHomeOrder, getTaskOrder, SUB_LABELS, moveHomeItem, moveTaskItem, startReorderPointer, moveReorderPointer, endReorderPointer } from '../personalization.js';
+import { getHomeOrder, getTaskOrder, SUB_LABELS } from '../personalization.js';
 import { toggleTheme } from '../theme.js';
 
 const currencyOptions=['KZT ₸','RUB ₽','USD $','EUR €','GBP £','UAH ₴','CNY ¥','Custom'];
@@ -60,62 +60,63 @@ export function renderSettings(){
     renderOrderRows(home,getHomeOrder(),'home'); renderOrderRows(task,getTaskOrder(),'task');
   });
 }
-function ensureReorderStyles(){
-  if(document.getElementById('reorder-style-v17')) return;
-  const style=document.createElement('style');
-  style.id='reorder-style-v17';
-  style.textContent=`
-    .reorder-row{position:relative;display:flex;align-items:center;gap:10px;padding:10px 0;transition:background .16s ease,transform .16s ease,opacity .16s ease;border-bottom:1px solid var(--gesso-divider)}
-    .reorder-row:last-child{border-bottom:0}
-    .reorder-row.dragging{opacity:.62;transform:scale(.985);z-index:3}
-    .reorder-row.drag-over{background:rgba(75,90,140,.08);border-radius:14px}
-    .reorder-main{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-    .reorder-label{font-size:11px;font-weight:800;min-width:0}
-    .drag-handle{width:30px;height:30px;border:0;border-radius:10px;background:var(--gesso-surface-recessed);color:var(--gesso-fg-muted);display:flex;align-items:center;justify-content:center;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
-    .drag-handle:active{cursor:grabbing;background:rgba(75,90,140,.12);color:var(--gesso-accent)}
-    .order-actions{display:flex;align-items:center;gap:5px}
-    .order-action{width:30px;height:30px;border:0;border-radius:10px;background:var(--gesso-surface-recessed);color:var(--gesso-fg-muted);display:flex;align-items:center;justify-content:center;transition:transform .12s ease,background .12s ease,color .12s ease}
-    .order-action:not(:disabled):active{transform:scale(.92);background:rgba(75,90,140,.12);color:var(--gesso-accent)}
-    .order-action:disabled{opacity:.32}
-    .row-chevron{width:28px;height:28px;border:0;background:transparent;color:#9a9da3;display:flex;align-items:center;justify-content:center;border-radius:50%}
-    .row-chevron:active{background:var(--gesso-surface-recessed)}
-  `;
-  document.head.appendChild(style);
-}
-function chevron(dir){
-  return dir==='up'
-    ? '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>'
-    : '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
-}
-function grip(){
-  return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h.01M16 6h.01M8 12h.01M16 12h.01M8 18h.01M16 18h.01"/></svg>';
-}
 function renderOrderRows(container,order,type){
   if(!container) return;
-  ensureReorderStyles();
+  const labels=SUB_LABELS;
   container.innerHTML=order.map((s,i)=>{
     const first=i===0,last=i===order.length-1;
-    const moveUp=type==='home'?`moveHomeItem('${s}',-1)`:`moveTaskItem('${s}',-1)`;
-    const moveDown=type==='home'?`moveHomeItem('${s}',1)`:`moveTaskItem('${s}',1)`;
-    return `<div class="settings-row reorder-row" data-reorder-type="${type}" data-reorder-key="${s}">
+    const up=type==='home'?`moveHomeItem('${s}',-1)`:`moveTaskItem('${s}',-1)`;
+    const down=type==='home'?`moveHomeItem('${s}',1)`:`moveTaskItem('${s}',1)`;
+    return `<div class="settings-row reorder-row" data-reorder-type="${type}" data-reorder-key="${s}" draggable="true" ondragstart="startReorder(event,'${type}','${s}')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="finishReorder(event,'${type}','${s}')">
       <div class="reorder-main">
-        <button type="button" class="drag-handle" aria-label="Перетащить" title="Перетащить">${grip()}</button>
-        <span class="reorder-label">${SUB_LABELS[s]}</span>
+        <button type="button" class="drag-handle" aria-label="Перетащить" title="Перетащить">⠿</button>
+        <span>${labels[s]}</span>
       </div>
-      <div class="order-actions">
-        <button type="button" class="order-action" ${first?'disabled':''} aria-label="Переместить выше" onclick="${moveUp}">${chevron('up')}</button>
-        <button type="button" class="order-action" ${last?'disabled':''} aria-label="Переместить ниже" onclick="${moveDown}">${chevron('down')}</button>
+      <div class="reorder-actions">
+        <button type="button" class="reorder-arrow" ${first?'disabled':''} onclick="${up}" aria-label="Переместить выше">▲</button>
+        <button type="button" class="reorder-arrow" ${last?'disabled':''} onclick="${down}" aria-label="Переместить ниже">▼</button>
+        <button type="button" class="row-chevron" onclick="openReorderMenu('${type}','${s}')" aria-label="Открыть порядок">›</button>
       </div>
     </div>`;
   }).join('');
-  container.querySelectorAll('.reorder-row').forEach(row=>{
-    const handle=row.querySelector('.drag-handle');
-    handle.addEventListener('pointerdown',e=>startReorderPointer(e,type,row.dataset.reorderKey,row));
-    handle.addEventListener('pointermove',moveReorderPointer);
-    handle.addEventListener('pointerup',endReorderPointer);
-    handle.addEventListener('pointercancel',endReorderPointer);
-    handle.addEventListener('lostpointercapture',e=>{ if(e.pointerType!=='mouse') endReorderPointer(e); });
+  if(!document.getElementById('reorder-safe-style')){
+    const st=document.createElement('style'); st.id='reorder-safe-style'; st.textContent=`
+      .reorder-row{display:flex;align-items:center;justify-content:space-between;gap:10px;touch-action:none}
+      .drag-handle{width:30px;height:30px;border:0;border-radius:10px;background:var(--gesso-surface-recessed);color:var(--gesso-fg-muted);font-size:18px;cursor:grab;touch-action:none}
+      .reorder-actions{display:flex;align-items:center;gap:4px}
+      .reorder-arrow{width:30px;height:30px;border:0;border-radius:10px;background:var(--gesso-surface-recessed);color:var(--gesso-fg-muted);font-size:12px}
+      .reorder-arrow:not(:disabled):active{transform:scale(.94);color:var(--gesso-accent)}
+      .reorder-arrow:disabled{opacity:.28}
+      .reorder-row.drag-over{background:rgba(75,90,140,.08);border-radius:14px}
+      .reorder-row.dragging{opacity:.6}
+    `; document.head.appendChild(st);
+  }
+  container.querySelectorAll('.drag-handle').forEach(handle=>{
+    handle.addEventListener('pointerdown',e=>startPointer(e, type, handle.closest('.reorder-row')));
   });
+}
+function startPointer(e,type,row){
+  const key=row.dataset.reorderKey;
+  let moved=false;
+  row.classList.add('dragging');
+  try{row.setPointerCapture(e.pointerId)}catch{}
+  const move=ev=>{
+    if(Math.abs(ev.clientY-e.clientY)>4)moved=true;
+    document.querySelectorAll('.reorder-row.drag-over').forEach(x=>x.classList.remove('drag-over'));
+    const target=document.elementsFromPoint(ev.clientX,ev.clientY).map(x=>x.closest?.('.reorder-row')).find(x=>x&&x!==row);
+    if(target&&target.dataset.reorderType===type)target.classList.add('drag-over');
+  };
+  const up=ev=>{
+    row.classList.remove('dragging');
+    const target=document.elementsFromPoint(ev.clientX,ev.clientY).map(x=>x.closest?.('.reorder-row')).find(x=>x&&x!==row);
+    document.querySelectorAll('.reorder-row.drag-over').forEach(x=>x.classList.remove('drag-over'));
+    if(moved&&target&&target.dataset.reorderType===type){
+      const from=row.dataset.reorderKey,to=target.dataset.reorderKey;
+      type==='home'?dropHomeItem(from,to):dropTaskItem(from,to);
+    }
+    row.removeEventListener('pointermove',move); row.removeEventListener('pointerup',up); row.removeEventListener('pointercancel',up);
+  };
+  row.addEventListener('pointermove',move); row.addEventListener('pointerup',up); row.addEventListener('pointercancel',up);
 }
 
 
