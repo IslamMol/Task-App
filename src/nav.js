@@ -10,38 +10,37 @@ import { renderSubtabs } from './personalization.js';
 
 export function switchMainTab(tab){
   state.mainTab = tab;
+  const statsView = document.getElementById('statsView');
+  const pager = document.getElementById('pager');
+  const statsBtn = document.getElementById('statsBtn');
+  if(statsView && statsView.style.display === 'block'){
+    statsView.style.display = 'none';
+    if(pager) pager.style.display = 'flex';
+    if(statsBtn) statsBtn.classList.remove('active');
+  }
   document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.type === tab));
 
   const fab = document.getElementById('fab');
-  fab.style.display = tab === 'settings' ? 'none' : 'flex';
+  if(fab) fab.style.display = tab === 'settings' ? 'none' : 'flex';
 
-  const pager = document.getElementById('pager');
-  const idx = MAIN_TABS.indexOf(tab);
-  pager.scrollTo({ left: idx * pager.clientWidth, behavior: 'smooth' });
+  const activePage = document.getElementById('page-' + tab);
+  document.querySelectorAll('.page').forEach(page => {
+    if(page !== activePage) page.classList.remove('gc-active');
+    page.style.display = page === activePage ? 'block' : 'none';
+  });
+  if(activePage){
+    activePage.classList.remove('gc-active');
+    requestAnimationFrame(()=>activePage.classList.add('gc-active'));
+  }
 
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   if(tab === 'calendar'){ renderCalendar(); }
   if(tab === 'settings'){ renderSettings(); }
 }
 
 export function initPagerSync(){
-  const pager = document.getElementById('pager');
-  let ticking = false;
-  pager.addEventListener('scroll', () => {
-    if(ticking) return;
-    ticking = true;
-    requestAnimationFrame(() => {
-      const idx = Math.round(pager.scrollLeft / pager.clientWidth);
-      const tab = MAIN_TABS[idx];
-      if(tab && tab !== state.mainTab){
-        state.mainTab = tab;
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.type === tab));
-        document.getElementById('fab').style.display = tab === 'settings' ? 'none' : 'flex';
-        if(tab === 'calendar'){ renderCalendar(); }
-        if(tab === 'settings'){ renderSettings(); }
-      }
-      ticking = false;
-    });
-  });
+  // Compatibility hook: the redesigned shell no longer uses the old
+  // horizontal pager, but app.js can continue calling this function.
 }
 
 export function toggleStatsView(){

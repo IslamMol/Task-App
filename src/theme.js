@@ -1,8 +1,8 @@
 export function applyTheme(){
-  const saved = localStorage.getItem('theme') || 'dark';
+  const saved = localStorage.getItem('theme') || 'light';
   document.documentElement.setAttribute('data-theme', saved);
   const btn = document.getElementById('themeBtn');
-  if(btn) btn.textContent = saved === 'dark' ? '🌙' : '☀️';
+  if(btn) btn.textContent = saved === 'dark' ? '☀️' : '🌙';
 }
 
 export function toggleTheme(){
