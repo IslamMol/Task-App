@@ -15,12 +15,14 @@ function readOrder(key, fallback){
 function writeOrder(key, order, cb){
   localStorage.setItem(key, JSON.stringify(order));
   cb?.();
-  // Re-render only what can actually be affected. This avoids the laggy
-  // full-app refresh that the previous ordering implementation caused.
   requestAnimationFrame(() => {
     window.renderSettings?.();
-    if (key === 'homeOrder') window.renderDashboard?.();
-    if (key === 'taskOrder') window.renderTasksPage?.();
+    if (key === 'homeOrder') {
+      if (!applyHomeOrderToDom(order)) window.renderDashboard?.();
+    }
+    if (key === 'taskOrder') {
+      if (!applyTaskOrderToDom(order)) window.renderTasksPage?.();
+    }
     if (key === 'calendarOrder') window.renderCalendar?.();
   });
 }
@@ -50,6 +52,35 @@ export function moveCalendarItem(sub,dir){ const order=getCalendarOrder(); const
 export function dropHomeItem(sub,target){ const o=getHomeOrder(); setHomeOrder(reorder(o,o.indexOf(sub),o.indexOf(target))); }
 export function dropTaskItem(sub,target){ const o=getTaskOrder(); setTaskOrder(reorder(o,o.indexOf(sub),o.indexOf(target))); }
 export function dropCalendarItem(sub,target){ const o=getCalendarOrder(); setCalendarOrder(reorder(o,o.indexOf(sub),o.indexOf(target))); }
+
+export function applyHomeOrderToDom(order=getHomeOrder()){
+  const root=document.getElementById('dashboardRoot');
+  const stack=root?.querySelector('.screen-stack');
+  if(!stack) return false;
+  const sections=[...stack.querySelectorAll('[data-home-section]')];
+  if(sections.length!==order.length) return false;
+  const map=new Map(sections.map(el=>[el.dataset.homeSection,el]));
+  if(order.some(key=>!map.has(key))) return false;
+  const fragment=document.createDocumentFragment();
+  order.forEach(key=>fragment.appendChild(map.get(key)));
+  const hero=stack.querySelector('.hero-card');
+  if(hero) hero.after(fragment); else stack.appendChild(fragment);
+  return true;
+}
+
+export function applyTaskOrderToDom(order=getTaskOrder()){
+  const root=document.getElementById('tasksRoot');
+  const tabs=root?.querySelector('[data-task-tabs]');
+  if(!tabs) return false;
+  const buttons=[...tabs.querySelectorAll('[data-task-tab]')];
+  if(buttons.length!==order.length) return false;
+  const map=new Map(buttons.map(el=>[el.dataset.taskTab,el]));
+  if(order.some(key=>!map.has(key))) return false;
+  const fragment=document.createDocumentFragment();
+  order.forEach(key=>fragment.appendChild(map.get(key)));
+  tabs.appendChild(fragment);
+  return true;
+}
 
 export function renderSubtabs(){
   window.renderDashboard?.();
