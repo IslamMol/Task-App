@@ -3,8 +3,8 @@
   "short_name": "Путь",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f1115",
-  "theme_color": "#0f1115",
+  "background_color": "#f4f3f1",
+  "theme_color": "#4b5a8c",
   "icons": [
     { "src": "icon.png", "sizes": "512x512", "type": "image/png" }
   ]
