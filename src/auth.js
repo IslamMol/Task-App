@@ -3,7 +3,6 @@ import { state } from './state.js';
 import { applyTheme } from './theme.js';
 import { ensureCompass, renderCompass } from './compass.js';
 import { loadEntries, renderList } from './entries.js';
-import { renderSubtabs } from './personalization.js';
 import { renderDashboard } from './dashboard.js';
 import { switchMainTab, switchHomeSub, switchTaskSub } from './nav.js';
 
@@ -62,7 +61,6 @@ export async function showApp(){
   await ensureCompass();
   await loadEntries();
   renderCompass();
-  renderSubtabs();
   switchHomeSub(state.homeSub);
   switchTaskSub(state.taskSub);
   renderList();

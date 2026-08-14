@@ -3,7 +3,6 @@ import { state } from './state.js';
 import { TYPE_COLOR, CATEGORY_EMOJI, CONTAINER_ID } from './constants.js';
 import { escapeHtml } from './utils/dom.js';
 import { todayStr, yesterdayStr } from './utils/date.js';
-import { renderStats } from './stats.js';
 import { cacheEntries, removeEntryFromCache, readEntriesFromCache } from './db/indexeddb.js';
 import { enqueue } from './db/sync.js';
 
@@ -78,11 +77,6 @@ export function renderList(){
       ? '<div class="empty">Пока пусто. Нажми + чтобы добавить</div>'
       : items.map(cardHtml).join('');
   });
-  // Если сейчас открыта статистика — держим её в актуальном состоянии
-  // тоже (иначе, например, только что отмеченный квест не обновит цифры
-  // на экране статистики, пока его не закрыть и не открыть заново).
-  const statsView = document.getElementById('statsView');
-  if(statsView && statsView.style.display === 'block'){ renderStats(statsView); }
   if(window.renderDashboard) window.renderDashboard();
   if(state.mainTab === 'tasks' && window.renderTasksPage) window.renderTasksPage('quest');
 }

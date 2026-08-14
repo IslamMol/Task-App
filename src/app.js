@@ -2,12 +2,12 @@ import { toggleTheme, applyTheme, setTheme } from './theme.js';
 import { init, toggleAuthMode, signIn, signUp } from './auth.js';
 import { openCompass, saveCompass, savePathTitle, addJournalEntry } from './compass.js';
 import { toggleDone, toggleHabit, updatePage, deleteEntry, openAdd, saveNew, pickCategory } from './entries.js';
-import { switchMainTab, switchHomeSub, switchTaskSub, initPagerSync, fabClick, toggleStatsView } from './nav.js';
+import { switchMainTab, switchHomeSub, switchTaskSub, initPagerSync } from './nav.js';
 import { renderDashboard, renderTasksPage, renderFinancePage, openFinanceInfo, openAddForQuest, openHabitsSheet, setActiveAdd } from './dashboard.js';
 import { onSyncStatusChange, syncState } from './db/sync.js';
 import { renderCalendar, openEventAdd, saveNewEvent, saveEventEdit, editEvent, deleteCalendarEvent, addEventToPhoneCalendar, selectCalendarDate, changeCalendarMonth, setRelativeDay, goToday } from './pages/calendar.js';
-import { saveAvatar, handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings } from './pages/settings.js';
-import { moveHomeItem, moveTaskItem, moveCalendarItem, startReorder, finishReorder } from './personalization.js';
+import { handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings } from './pages/settings.js';
+import { moveHomeItem, moveTaskItem, moveCalendarItem } from './personalization.js';
 
 // index.html до сих пор использует инлайновые onclick="..." атрибуты —
 // это сохранено намеренно (см. Этап 2), поэтому нужные функции явно
@@ -17,11 +17,11 @@ Object.assign(window, {
   toggleAuthMode, signIn, signUp,
   openCompass, saveCompass, savePathTitle, addJournalEntry,
   toggleDone, toggleHabit, updatePage, deleteEntry, openAdd, saveNew, pickCategory,
-  switchMainTab, switchHomeSub, switchTaskSub, fabClick, toggleStatsView,
+  switchMainTab, switchHomeSub, switchTaskSub,
   renderDashboard, renderTasksPage, renderFinancePage, openFinanceInfo, openAddForQuest, openHabitsSheet, setActiveAdd,
   renderCalendar, openEventAdd, saveNewEvent, saveEventEdit, editEvent, deleteCalendarEvent, addEventToPhoneCalendar, selectCalendarDate, changeCalendarMonth, setRelativeDay, goToday,
-  saveAvatar, handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings,
-  moveHomeItem, moveTaskItem, moveCalendarItem, startReorder, finishReorder,
+  handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings,
+  moveHomeItem, moveTaskItem, moveCalendarItem,
 });
 
 applyTheme();
