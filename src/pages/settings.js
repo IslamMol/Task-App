@@ -1,6 +1,6 @@
 import { state } from '../state.js';
 import { sb } from '../services/supabase.js';
-import { getHomeOrder, getTaskOrder, getCalendarOrder, moveHomeItem, moveTaskItem, moveCalendarItem, SUB_LABELS, HOME_LABELS, CALENDAR_LABELS } from '../personalization.js';
+import { getHomeOrder, getTaskOrder, getCalendarOrder, setHomeOrder, setTaskOrder, setCalendarOrder, moveHomeItem, moveTaskItem, moveCalendarItem, SUB_LABELS, HOME_LABELS, CALENDAR_LABELS } from '../personalization.js';
 import { setTheme } from '../theme.js';
 
 const currencyOptions=['KZT ₸','USD $','EUR €','GBP £','RUB ₽','UAH ₴','CNY ¥','Custom'];
