@@ -1,85 +1,56 @@
 import { state } from './state.js';
 import { HOME_SUBTABS_DEFAULT, TASK_SUBTABS_DEFAULT } from './constants.js';
 
-const SUB_LABELS = { habit: 'Привычки', note: 'Дела', finance: 'Затраты', quest: 'Квесты', book: 'Книги' };
+export const SUB_LABELS = { habit:'Привычки', note:'Квесты и дела', finance:'Финансы', quest:'Квесты', book:'Книги' };
+export const HOME_LABELS = { habit:'Привычки', note:'Задачи на сегодня', finance:'Финансы', book:'Чтение' };
+export const CALENDAR_LABELS = { calendar:'Календарь', selected:'Выбранный день', upcoming:'Ближайшие события' };
+const CALENDAR_DEFAULT = ['calendar','selected','upcoming'];
 
-export function getHomeOrder(){
-  try { return JSON.parse(localStorage.getItem('homeOrder')) || HOME_SUBTABS_DEFAULT; }
-  catch { return HOME_SUBTABS_DEFAULT; }
+function readOrder(key, fallback){
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key));
+    return Array.isArray(parsed) && parsed.length ? parsed : [...fallback];
+  } catch { return [...fallback]; }
 }
-export function getTaskOrder(){
-  try { return JSON.parse(localStorage.getItem('taskOrder')) || TASK_SUBTABS_DEFAULT; }
-  catch { return TASK_SUBTABS_DEFAULT; }
-}
-export function setHomeOrder(order){ localStorage.setItem('homeOrder', JSON.stringify(order)); renderSubtabs(); window.renderSettings?.(); window.renderDashboard?.(); }
-export function setTaskOrder(order){ localStorage.setItem('taskOrder', JSON.stringify(order)); renderSubtabs(); window.renderSettings?.(); window.renderTasksPage?.(); }
-
+function writeOrder(key, order, cb){ localStorage.setItem(key, JSON.stringify(order)); cb?.(); window.renderSettings?.(); }
 function reorder(order, from, to){
-  if(from === to || from < 0 || to < 0 || from >= order.length || to >= order.length) return order;
+  if(from===to || from<0 || to<0 || from>=order.length || to>=order.length) return order;
   const next=[...order]; const [item]=next.splice(from,1); next.splice(to,0,item); return next;
 }
-export function moveHomeItem(sub, dir){
-  const order=getHomeOrder(); const i=order.indexOf(sub); const j=i+dir; if(j<0||j>=order.length) return; setHomeOrder(reorder(order,i,j));
-}
-export function moveTaskItem(sub, dir){
-  const order=getTaskOrder(); const i=order.indexOf(sub); const j=i+dir; if(j<0||j>=order.length) return; setTaskOrder(reorder(order,i,j));
-}
-export function dropHomeItem(sub, target){
-  const order=getHomeOrder(); const from=order.indexOf(sub); const to=order.indexOf(target); setHomeOrder(reorder(order,from,to));
-}
-export function dropTaskItem(sub, target){
-  const order=getTaskOrder(); const from=order.indexOf(sub); const to=order.indexOf(target); setTaskOrder(reorder(order,from,to));
-}
 
-function renderOrder(container, order, active, type){
-  container.innerHTML=order.map((s)=>`
-    <div class="settings-row reorder-row" draggable="true" data-reorder-type="${type}" data-reorder-key="${s}" ondragstart="window.startReorder(event,'${type}','${s}')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="window.finishReorder(event,'${type}','${s}')">
-      <div class="reorder-main"><span class="drag-grip" aria-hidden="true">⠿</span><span>${SUB_LABELS[s]}</span></div>
-      <button class="row-chevron" onclick="${type==='home'?`window.switchHomeSub('${s}')`:`window.switchTaskSub('${s}')`}" aria-label="Открыть">›</button>
-    </div>`).join('');
+export function getHomeOrder(){
+  const raw=readOrder('homeOrder',['habit','note','finance','book']);
+  const desired=['habit','note','finance','book'];
+  return desired.filter(k=>raw.includes(k)).concat(desired.filter(k=>!raw.includes(k)));
 }
+export function getTaskOrder(){
+  const raw=readOrder('taskOrder',['quest','book','habit']);
+  const desired=['quest','book','habit'];
+  return desired.filter(k=>raw.includes(k)).concat(desired.filter(k=>!raw.includes(k)));
+}
+export function getCalendarOrder(){ return readOrder('calendarOrder', CALENDAR_DEFAULT); }
+export function setHomeOrder(order){ writeOrder('homeOrder', order, ()=>{ renderSubtabs(); }); }
+export function setTaskOrder(order){ writeOrder('taskOrder', order, ()=>{ renderSubtabs(); }); }
+export function setCalendarOrder(order){ writeOrder('calendarOrder', order, ()=>{ window.renderCalendar?.(); }); }
 
-export function renderSubtabs(){
-  const homeContainer=document.getElementById('homeSubtabs');
-  if(homeContainer) homeContainer.innerHTML=getHomeOrder().map(s=>`<button class="subtab ${s===state.homeSub?'active':''}" data-sub="${s}" onclick="switchHomeSub('${s}')">${SUB_LABELS[s]}</button>`).join('');
-  const taskContainer=document.getElementById('taskSubtabs');
-  if(taskContainer) taskContainer.innerHTML=getTaskOrder().map(s=>`<button class="subtab ${s===state.taskSub?'active':''}" data-sub="${s}" onclick="switchTaskSub('${s}')">${SUB_LABELS[s]}</button>`).join('');
-}
+export function moveHomeItem(sub,dir){ const order=getHomeOrder(); const i=order.indexOf(sub); const j=i+dir; if(j>=0&&j<order.length) setHomeOrder(reorder(order,i,j)); }
+export function moveTaskItem(sub,dir){ const order=getTaskOrder(); const i=order.indexOf(sub); const j=i+dir; if(j>=0&&j<order.length) setTaskOrder(reorder(order,i,j)); }
+export function moveCalendarItem(sub,dir){ const order=getCalendarOrder(); const i=order.indexOf(sub); const j=i+dir; if(j>=0&&j<order.length) setCalendarOrder(reorder(order,i,j)); }
+export function dropHomeItem(sub,target){ const o=getHomeOrder(); setHomeOrder(reorder(o,o.indexOf(sub),o.indexOf(target))); }
+export function dropTaskItem(sub,target){ const o=getTaskOrder(); setTaskOrder(reorder(o,o.indexOf(sub),o.indexOf(target))); }
+export function dropCalendarItem(sub,target){ const o=getCalendarOrder(); setCalendarOrder(reorder(o,o.indexOf(sub),o.indexOf(target))); }
 
-export function renderReorderSettings(view){
-  renderOrder(view.querySelector('[data-order="home"]'),getHomeOrder(),state.homeSub,'home');
-  renderOrder(view.querySelector('[data-order="task"]'),getTaskOrder(),state.taskSub,'task');
+export function renderSubtabs(){ }
+export function startReorder(event,type,key){ event.dataTransfer?.setData('text/plain',JSON.stringify({type,key})); }
+export function finishReorder(event,type,target){
+  event.preventDefault();
+  try{
+    const data=JSON.parse(event.dataTransfer?.getData('text/plain')||'');
+    if(!data?.key || data.type!==type) return;
+    if(type==='home') dropHomeItem(data.key,target);
+    else if(type==='task') dropTaskItem(data.key,target);
+    else if(type==='calendar') dropCalendarItem(data.key,target);
+  }finally{
+    event.currentTarget?.classList.remove('drag-over');
+  }
 }
-
-export function startReorder(e,type,key){
-  e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',JSON.stringify({type,key}));
-}
-export function finishReorder(e,type,target){
-  e.preventDefault(); document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
-  try{ const data=JSON.parse(e.dataTransfer.getData('text/plain')); if(data.type!==type) return; type==='home'?dropHomeItem(data.key,target):dropTaskItem(data.key,target); }catch{}
-}
-
-let pointerDrag=null;
-export function startReorderPointer(e,type,key,row){
-  e.preventDefault(); e.stopPropagation();
-  pointerDrag={type,key,row,pointerId:e.pointerId,target:null};
-  row.classList.add('dragging');
-  row.setPointerCapture?.(e.pointerId);
-}
-export function moveReorderPointer(e){
-  if(!pointerDrag) return;
-  const target=document.elementsFromPoint(e.clientX,e.clientY).map(el=>el.closest?.('.reorder-row')).find(el=>el);
-  document.querySelectorAll('.reorder-row.drag-over').forEach(el=>el.classList.remove('drag-over'));
-  if(target && target!==pointerDrag.row && target.dataset.reorderType===pointerDrag.type){
-    target.classList.add('drag-over'); pointerDrag.target=target;
-  } else pointerDrag.target=null;
-}
-export function endReorderPointer(){
-  if(!pointerDrag) return;
-  const d=pointerDrag;
-  document.querySelectorAll('.reorder-row.drag-over,.reorder-row.dragging').forEach(el=>el.classList.remove('drag-over','dragging'));
-  pointerDrag=null;
-  if(d.target){ const target=d.target.dataset.reorderKey; d.type==='home'?dropHomeItem(d.key,target):dropTaskItem(d.key,target); }
-}
-
-export { SUB_LABELS };
