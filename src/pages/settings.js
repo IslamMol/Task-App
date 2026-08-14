@@ -35,10 +35,19 @@ function renderThemeToggle(theme){
 }
 function renderOrderRows(container,order,type,labels){
   if(!container)return;
-  container.innerHTML=order.map(key=>`<div class="settings-row reorder-row" draggable="true" ondragstart="startReorder(event,'${type}','${key}')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="finishReorder(event,'${type}','${key}')">
-    <button class="reorder-main reorder-open" onclick="openReorderMenu('${type}','${key}')" aria-label="Изменить порядок"><span class="drag-grip">⠿</span><span>${labels[key]}</span></button>
-    <span class="reorder-chevron">›</span>
-  </div>`).join('');
+  container.innerHTML=order.map((key,idx)=>{
+    const upDisabled=idx===0?'disabled':'';
+    const downDisabled=idx===order.length-1?'disabled':'';
+    return `<div class="settings-row reorder-row" data-order-type="${type}" data-order-key="${key}">
+      <button class="reorder-main reorder-open" type="button" onclick="openReorderMenu('${type}','${key}')" aria-label="Открыть настройки порядка">
+        <span class="drag-grip" aria-hidden="true">⠿</span><span>${labels[key]}</span>
+      </button>
+      <div class="reorder-stepper" aria-label="Порядок">
+        <button type="button" class="reorder-step" ${upDisabled} onclick="moveReorderBy('${type}','${key}',-1,event)" aria-label="Переместить выше">⌃</button>
+        <button type="button" class="reorder-step" ${downDisabled} onclick="moveReorderBy('${type}','${key}',1,event)" aria-label="Переместить ниже">⌄</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 export function renderSettings(){
@@ -75,9 +84,23 @@ export function openReorderMenu(type,key){
   document.body.appendChild(modal);
 }
 export function moveReorderItem(type,key,targetIndex){
-  const options=type==='home'?getHomeOrder():type==='task'?getTaskOrder():getCalendarOrder(); const next=[...options]; const from=next.indexOf(key); if(from<0||targetIndex<0||targetIndex>=next.length)return; next.splice(from,1); next.splice(targetIndex,0,key);
-  localStorage.setItem(type==='home'?'homeOrder':type==='task'?'taskOrder':'calendarOrder',JSON.stringify(next));
-  document.querySelector('.reorder-bg')?.remove(); renderSettings(); window.renderCalendar?.(); window.renderDashboard?.();
+  const options=type==='home'?getHomeOrder():type==='task'?getTaskOrder():getCalendarOrder();
+  const next=[...options];
+  const from=next.indexOf(key);
+  if(from<0||targetIndex<0||targetIndex>=next.length||from===targetIndex)return;
+  next.splice(from,1); next.splice(targetIndex,0,key);
+  if(type==='home') setHomeOrder(next);
+  else if(type==='task') setTaskOrder(next);
+  else setCalendarOrder(next);
+  document.querySelector('.reorder-bg')?.remove();
+}
+
+export function moveReorderBy(type,key,delta,event){
+  event?.preventDefault?.(); event?.stopPropagation?.();
+  const options=type==='home'?getHomeOrder():type==='task'?getTaskOrder():getCalendarOrder();
+  const index=options.indexOf(key); const target=index+delta;
+  if(target<0 || target>=options.length) return;
+  moveReorderItem(type,key,target);
 }
 
 export function setAppLang(lang){ state.lang=lang; localStorage.setItem('lang',lang); renderSettings(); }
