@@ -12,20 +12,7 @@ function readOrder(key, fallback){
     return Array.isArray(parsed) && parsed.length ? parsed : [...fallback];
   } catch { return [...fallback]; }
 }
-function writeOrder(key, order, cb){
-  localStorage.setItem(key, JSON.stringify(order));
-  cb?.();
-  requestAnimationFrame(() => {
-    window.renderSettings?.();
-    if (key === 'homeOrder') {
-      if (!applyHomeOrderToDom(order)) window.renderDashboard?.();
-    }
-    if (key === 'taskOrder') {
-      if (!applyTaskOrderToDom(order)) window.renderTasksPage?.();
-    }
-    if (key === 'calendarOrder') window.renderCalendar?.();
-  });
-}
+function writeOrder(key, order, cb){ localStorage.setItem(key, JSON.stringify(order)); cb?.(); window.renderSettings?.(); }
 function reorder(order, from, to){
   if(from===to || from<0 || to<0 || from>=order.length || to>=order.length) return order;
   const next=[...order]; const [item]=next.splice(from,1); next.splice(to,0,item); return next;
@@ -53,41 +40,7 @@ export function dropHomeItem(sub,target){ const o=getHomeOrder(); setHomeOrder(r
 export function dropTaskItem(sub,target){ const o=getTaskOrder(); setTaskOrder(reorder(o,o.indexOf(sub),o.indexOf(target))); }
 export function dropCalendarItem(sub,target){ const o=getCalendarOrder(); setCalendarOrder(reorder(o,o.indexOf(sub),o.indexOf(target))); }
 
-export function applyHomeOrderToDom(order=getHomeOrder()){
-  const root=document.getElementById('dashboardRoot');
-  const stack=root?.querySelector('.screen-stack');
-  if(!stack) return false;
-  const sections=[...stack.querySelectorAll('[data-home-section]')];
-  if(sections.length!==order.length) return false;
-  const map=new Map(sections.map(el=>[el.dataset.homeSection,el]));
-  if(order.some(key=>!map.has(key))) return false;
-  const fragment=document.createDocumentFragment();
-  order.forEach(key=>fragment.appendChild(map.get(key)));
-  const hero=stack.querySelector('.hero-card');
-  if(hero) hero.after(fragment); else stack.appendChild(fragment);
-  return true;
-}
-
-export function applyTaskOrderToDom(order=getTaskOrder()){
-  const root=document.getElementById('tasksRoot');
-  const tabs=root?.querySelector('[data-task-tabs]');
-  if(!tabs) return false;
-  const buttons=[...tabs.querySelectorAll('[data-task-tab]')];
-  if(buttons.length!==order.length) return false;
-  const map=new Map(buttons.map(el=>[el.dataset.taskTab,el]));
-  if(order.some(key=>!map.has(key))) return false;
-  const fragment=document.createDocumentFragment();
-  order.forEach(key=>fragment.appendChild(map.get(key)));
-  tabs.appendChild(fragment);
-  return true;
-}
-
-export function renderSubtabs(){
-  window.renderDashboard?.();
-  window.renderTasksPage?.();
-  window.renderCalendar?.();
-  window.renderSettings?.();
-}
+export function renderSubtabs(){ }
 export function startReorder(event,type,key){ event.dataTransfer?.setData('text/plain',JSON.stringify({type,key})); }
 export function finishReorder(event,type,target){
   event.preventDefault();

@@ -6,8 +6,8 @@ import { switchMainTab, switchHomeSub, switchTaskSub, initPagerSync, fabClick, t
 import { renderDashboard, renderTasksPage, renderFinancePage, openFinanceInfo, openAddForQuest, openHabitsSheet, setActiveAdd } from './dashboard.js';
 import { onSyncStatusChange, syncState } from './db/sync.js';
 import { renderCalendar, openEventAdd, saveNewEvent, saveEventEdit, editEvent, deleteCalendarEvent, addEventToPhoneCalendar, selectCalendarDate, changeCalendarMonth, setRelativeDay, goToday } from './pages/calendar.js';
-import { saveAvatar, handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, moveReorderBy, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings } from './pages/settings.js';
-import { moveHomeItem, moveTaskItem, moveCalendarItem, startReorder, finishReorder, dropHomeItem, dropTaskItem, dropCalendarItem } from './personalization.js';
+import { saveAvatar, handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings } from './pages/settings.js';
+import { moveHomeItem, moveTaskItem, moveCalendarItem, startReorder, finishReorder } from './personalization.js';
 
 // index.html до сих пор использует инлайновые onclick="..." атрибуты —
 // это сохранено намеренно (см. Этап 2), поэтому нужные функции явно
@@ -20,8 +20,8 @@ Object.assign(window, {
   switchMainTab, switchHomeSub, switchTaskSub, fabClick, toggleStatsView,
   renderDashboard, renderTasksPage, renderFinancePage, openFinanceInfo, openAddForQuest, openHabitsSheet, setActiveAdd,
   renderCalendar, openEventAdd, saveNewEvent, saveEventEdit, editEvent, deleteCalendarEvent, addEventToPhoneCalendar, selectCalendarDate, changeCalendarMonth, setRelativeDay, goToday,
-  saveAvatar, handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, moveReorderBy, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings,
-  moveHomeItem, moveTaskItem, moveCalendarItem, startReorder, finishReorder, dropHomeItem, dropTaskItem, dropCalendarItem,
+  saveAvatar, handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings,
+  moveHomeItem, moveTaskItem, moveCalendarItem, startReorder, finishReorder,
 });
 
 applyTheme();
