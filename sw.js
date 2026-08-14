@@ -5,7 +5,7 @@
 // Версионирование: при любом изменении списка файлов ниже — подними
 // номер в CACHE. Старые версии кэша удаляются сами при активации новой.
 
-const CACHE = 'put-v5';
+const CACHE = 'put-v6';
 
 // "Скелет" приложения — всё, что нужно, чтобы открыть его без интернета.
 // Внешние библиотеки (Supabase JS, Dexie) кэшируются тоже — иначе первый
@@ -24,11 +24,15 @@ const APP_SHELL = [
   './src/theme.js',
   './src/state.js',
   './src/constants.js',
+  './src/i18n.js',
+  './src/personalization.js',
   './src/services/supabase.js',
   './src/utils/date.js',
   './src/utils/dom.js',
   './src/db/indexeddb.js',
   './src/db/sync.js',
+  './src/pages/calendar.js',
+  './src/pages/settings.js',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
   'https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js',
 ];
