@@ -35,10 +35,62 @@ function renderThemeToggle(theme){
 }
 function renderOrderRows(container,order,type,labels){
   if(!container)return;
-  container.innerHTML=order.map(key=>`<div class="settings-row reorder-row" draggable="true" ondragstart="startReorder(event,'${type}','${key}')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="finishReorder(event,'${type}','${key}')">
-    <button class="reorder-main reorder-open" onclick="openReorderMenu('${type}','${key}')" aria-label="Изменить порядок"><span class="drag-grip">⠿</span><span>${labels[key]}</span></button>
+  container.innerHTML=order.map(key=>`<div class="settings-row reorder-row" draggable="true" data-order-type="${type}" data-order-key="${key}" ondragstart="startReorder(event,'${type}','${key}')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="finishReorder(event,'${type}','${key}')">
+    <button class="reorder-main reorder-open" onclick="openReorderMenu('${type}','${key}')" aria-label="Изменить порядок"><span class="drag-grip" title="Перетащить">⠿</span><span>${labels[key]}</span></button>
     <span class="reorder-chevron">›</span>
   </div>`).join('');
+  setupPointerReorder(container,type);
+}
+
+function setupPointerReorder(container,type){
+  const rows=[...container.querySelectorAll('.reorder-row')];
+  let dragging=null;
+  let startY=0;
+  let moved=false;
+
+  const cleanup=()=>{
+    rows.forEach(r=>r.classList.remove('drag-over','is-dragging'));
+    dragging=null; moved=false;
+  };
+
+  rows.forEach(row=>{
+    row.addEventListener('pointerdown',e=>{
+      if(e.pointerType==='mouse' && e.button!==0) return;
+      // On mouse, keep the native HTML5 DnD behaviour. Pointer fallback is for touch/stylus.
+      if(e.pointerType==='mouse') return;
+      dragging=row; startY=e.clientY; moved=false;
+      row.classList.add('is-dragging');
+      try{ row.setPointerCapture(e.pointerId); }catch{}
+    });
+
+    row.addEventListener('pointermove',e=>{
+      if(!dragging || e.pointerType==='mouse') return;
+      if(Math.abs(e.clientY-startY)>6) moved=true;
+      if(!moved) return;
+      const siblings=[...container.querySelectorAll('.reorder-row')].filter(r=>r!==dragging);
+      const target=siblings.find(r=>{
+        const rect=r.getBoundingClientRect();
+        return e.clientY >= rect.top && e.clientY <= rect.bottom;
+      });
+      siblings.forEach(r=>r.classList.remove('drag-over'));
+      target?.classList.add('drag-over');
+    });
+
+    row.addEventListener('pointerup',e=>{
+      if(!dragging || e.pointerType==='mouse') return;
+      const target=[...container.querySelectorAll('.reorder-row')].find(r=>r!==dragging && e.clientY>=r.getBoundingClientRect().top && e.clientY<=r.getBoundingClientRect().bottom);
+      if(target && moved){
+        const fromKey=dragging.dataset.orderKey;
+        const toKey=target.dataset.orderKey;
+        if(type==='home') window.dropHomeItem?.(fromKey,toKey);
+        else if(type==='task') window.dropTaskItem?.(fromKey,toKey);
+        else if(type==='calendar') window.dropCalendarItem?.(fromKey,toKey);
+      }
+      cleanup();
+    });
+
+    row.addEventListener('pointercancel',cleanup);
+  });
 }
 
 export function renderSettings(){
