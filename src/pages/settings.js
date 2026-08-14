@@ -36,8 +36,8 @@ function renderThemeToggle(theme){
 const ORDER_UI_STYLE = `
 <style id="apple-order-controls">
 .reorder-inline-actions{display:flex;align-items:center;gap:6px;margin-left:auto;}
-.apple-step-btn{width:32px;height:32px;border:0;border-radius:999px;background:rgba(118,118,128,.12);color:#4b5a8c;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 32px;-webkit-tap-highlight-color:transparent;transition:transform 120ms ease,background 160ms ease,color 160ms ease,opacity 160ms ease;}
-.apple-step-btn svg{width:17px;height:17px;display:block;}
+.apple-step-btn{width:40px;height:40px;border:0;border-radius:999px;background:rgba(118,118,128,.12);color:#4b5a8c;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 40px;-webkit-tap-highlight-color:transparent;transition:transform 120ms ease,background 160ms ease,color 160ms ease,opacity 160ms ease;}
+.apple-step-btn svg{width:21px;height:21px;display:block;}
 .apple-step-btn:not(:disabled):active{transform:scale(.92);background:rgba(75,90,140,.18);}
 .apple-step-btn:not(:disabled):hover{background:rgba(75,90,140,.15);}
 .apple-step-btn:disabled{opacity:.28;cursor:default;}
