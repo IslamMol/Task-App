@@ -338,8 +338,7 @@ body{background:var(--ds-canvas);}
     </div>
     <div class="header-actions">
       <span class="sync-dot" id="syncDot" title="Синхронизация"></span>
-      <button class="icon-btn" onclick="toggleStatsView()" id="statsBtn">📊</button>
-      <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+      <button class="icon-btn" onclick="toggleStatsView()" id="statsBtn" aria-label="Аналитика" style="display:none">📊</button><button class="theme-btn" onclick="toggleTheme()" id="themeBtn" style="display:none">🌙</button>
     </div>
   </header>
 
@@ -374,24 +373,23 @@ body{background:var(--ds-canvas);}
 </div>
 
 <div class="bottom-nav" id="bottomNav" style="display:none;">
-  <button class="nav-item active" data-type="home" onclick="switchMainTab('home')">
-    <span class="ic-badge"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></span>
-    <span data-i18n="navHome">Домой</span>
+  <button class="tab nav-item active" data-type="home" onclick="switchMainTab('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg><span>Сегодня</span>
   </button>
-  <button class="nav-item" data-type="tasks" onclick="switchMainTab('tasks')">
-    <span class="ic-badge"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h14v16H5z"/><path d="M8.5 9h7M8.5 13h7M8.5 17h4"/></svg></span>
-    <span data-i18n="navTasks">Задания</span>
+  <button class="tab nav-item" data-type="tasks" onclick="switchMainTab('tasks')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><path d="m9 12l2 2l4-4"></path></svg><span>Задачи</span>
   </button>
-  <button class="nav-add" id="fab" onclick="fabClick()">+</button>
-  <button class="nav-item" data-type="calendar" onclick="switchMainTab('calendar')">
-    <span class="ic-badge"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
-    <span data-i18n="navCalendar">Календарь</span>
+  <button class="tab nav-item" data-type="calendar" onclick="switchMainTab('calendar')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 2v4m8-4v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg><span>Календарь</span>
   </button>
-  <button class="nav-item" data-type="settings" onclick="switchMainTab('settings')">
-    <span class="ic-badge"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg></span>
-    <span data-i18n="navSettings">Настройки</span>
+  <button class="tab nav-item" data-type="finance" onclick="switchMainTab('finance')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg><span>Финансы</span>
+  </button>
+  <button class="tab nav-item" data-type="settings" onclick="switchMainTab('settings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Мой путь</span>
   </button>
 </div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js"></script>
@@ -513,7 +511,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   .dashboard-habit-seg{transition:flex-grow 220ms var(--gc-ease),filter 160ms ease,transform 160ms ease!important;}
   .dashboard-habit-seg:active{transform:scaleY(.94);filter:brightness(.96);}
   .dashboard-ring-progress{transition:stroke-dashoffset 720ms var(--gc-ease);}
-  .stats-card,.settings-section,.card{transition:transform 180ms var(--gc-ease),box-shadow 180ms ease,background-color 180ms ease;}
+  .stats-card,.settings-section,.card{transition:none;}
   .stats-card:active,.settings-section:active,.card:active{transform:scale(.995);}
   @keyframes gcModalIn{from{opacity:0}to{opacity:1}}
   @keyframes gcModalOut{from{opacity:1}to{opacity:0}}
@@ -528,3 +526,111 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
     if(page) requestAnimationFrame(()=>page.classList.add('gc-active'));
   };
 </script>
+
+
+<style id="grid-clarity-reference-v11">
+:root{
+  --gesso-canvas:#f4f3f1;
+  --gesso-surface:#fff;
+  --gesso-surface-elevated:#fff;
+  --gesso-surface-recessed:#eeecea;
+  --gesso-fg:#23252a;
+  --gesso-fg-muted:#6b6e76;
+  --gesso-divider:#23252a;
+  --gesso-accent:#4b5a8c;
+  --gesso-accent-2:#4b5a8c;
+  --gesso-on-accent:#fff;
+  --gesso-data-1:#8f96a8;
+  --gesso-data-2:#c98a52;
+  --gesso-data-3:#4b5a8c;
+  --gesso-data-4:#5a9a7a;
+  --gesso-data-5:#b0576a;
+  --gesso-success:#4f8f6a;
+  --gesso-warning:#c98a52;
+  --gesso-error:#b0576a;
+  --gesso-radius-sm:8px;
+  --gesso-radius-md:16px;
+  --gesso-radius-lg:24px;
+  --gesso-radius-full:9999px;
+  --gesso-duration-fast:160ms;
+  --gesso-easing-default:cubic-bezier(.2,.7,.3,1);
+}
+html{background:var(--gesso-canvas);color-scheme:light;}
+body{background:radial-gradient(circle,rgba(26,26,26,.05) 1px,transparent 1.2px) 0 0/16px 16px,var(--gesso-canvas)!important;color:var(--gesso-fg)!important;font-family:"Manrope",system-ui,-apple-system,sans-serif!important;line-height:1.4;}
+#appScreen{max-width:393px;margin:0 auto;min-height:100dvh;background:transparent!important;}
+#appScreen > header{display:none!important;}
+#pager{height:auto;min-height:100dvh;overflow:visible;display:block!important;}
+.page{display:none;min-height:100dvh;padding:48px 16px 108px!important;}
+#page-home{display:block;}
+#home-dashboard{display:flex;flex-direction:column;gap:24px;}
+.greeting{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.greeting .hi{font-size:15px;color:var(--gesso-fg-muted);font-weight:500;}
+.greeting h1{font-size:30px;line-height:34px;font-weight:800;margin:0;letter-spacing:-.03em;}
+.profile-avatar{width:40px;height:40px;border-radius:50%;background:var(--gesso-surface-recessed);border:1px solid rgba(26,26,26,.04);display:flex;align-items:center;justify-content:center;color:var(--gesso-fg-muted);padding:0;flex-shrink:0;transition:transform 80ms ease,background 160ms ease;}
+.profile-avatar svg{width:22px;height:22px;stroke-width:1.8;}
+.profile-avatar:active{transform:scale(.94);}
+.hero-card{background:var(--gesso-surface);border-radius:var(--gesso-radius-lg);padding:24px;box-shadow:0 4px 16px rgba(26,20,10,.06);display:flex;flex-direction:column;align-items:center;gap:16px;}
+.ring-wrap{position:relative;width:200px;height:200px;}
+.ring-wrap svg{width:100%;height:100%;}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
+.ring-center .num{font-family:"Manrope",sans-serif;font-size:56px;line-height:56px;font-weight:800;color:var(--gesso-fg);}
+.ring-center .lbl{font-size:13px;color:var(--gesso-fg-muted);font-weight:600;}
+.hero-sub{text-align:center;font-size:15px;color:var(--gesso-fg-muted);max-width:280px;line-height:1.5;margin:0;}
+.hero-sub strong{color:var(--gesso-fg);font-weight:700;}
+@keyframes gesso-path-draw{from{stroke-dashoffset:var(--circumference)}to{stroke-dashoffset:calc(var(--circumference)*(1 - var(--p)))}}
+.ring-progress{animation:gesso-path-draw 900ms var(--gesso-easing-default) forwards;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;}
+.sec-head h2{font-size:19px;line-height:1.2;font-weight:800;margin:0;letter-spacing:-.02em;}
+.sec-head .view-all{font-size:13px;font-weight:700;color:var(--gesso-accent-2);display:flex;align-items:center;gap:2px;background:none;border:0;padding:4px;cursor:pointer;}
+.sec-head .view-all:hover{opacity:.65;}
+.sec-head .view-all .ic{width:16px;height:16px;}
+.card{background:var(--gesso-surface);border-radius:var(--gesso-radius-lg);padding:20px;box-shadow:0 4px 16px rgba(26,20,10,.06);}
+.habit-bar{display:flex;width:100%;height:56px;border-radius:var(--gesso-radius-md);overflow:hidden;}
+.habit-seg{display:flex;align-items:center;justify-content:center;min-width:0;border:0;color:#fff;font-weight:800;font-size:15px;font-family:"Manrope",sans-serif;transition:flex-grow 200ms var(--gesso-easing-default);}
+.habit-seg:active{filter:brightness(.92);}
+.habit-empty-bar{display:flex;align-items:center;justify-content:center;width:100%;background:var(--gesso-surface-recessed);color:var(--gesso-fg-muted);font-size:13px;font-weight:600;}
+.habit-legend{display:flex;flex-wrap:wrap;gap:12px 20px;margin-top:16px;}
+.habit-legend .item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gesso-fg-muted);font-weight:600;}
+.habit-legend .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.task-list{display:flex;flex-direction:column;gap:12px;}
+.task-row{display:flex;align-items:center;gap:12px;background:var(--gesso-surface-recessed);border-radius:9999px;padding:16px;transition:background 160ms ease,transform 80ms ease;}
+.task-row:active{transform:scale(.992);}
+.task-check{width:26px;height:26px;border-radius:50%;flex-shrink:0;border:2px solid var(--gesso-divider);background:var(--gesso-surface);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;transition:transform 80ms ease,background 160ms ease;}
+.task-check:active{transform:scale(.88);}
+.task-check.done{background:var(--gesso-data-4);border-color:var(--gesso-data-4);}
+.task-check .ic{width:14px;height:14px;color:#fff;}
+.task-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.task-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.task-title{font-size:15px;font-weight:700;color:var(--gesso-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.task-title.done{text-decoration:line-through;color:var(--gesso-fg-muted);font-weight:500;}
+.task-meta{font-size:12px;color:var(--gesso-fg-muted);font-weight:500;}
+.task-empty,.finance-placeholder{font-size:13px;color:var(--gesso-fg-muted);line-height:1.5;}
+.task-summary{padding:16px!important;}
+.task-summary .lbl{font-size:13px;color:var(--gesso-fg-muted);font-weight:600;}
+.task-summary .val{font-family:"Manrope",sans-serif;font-size:24px;line-height:28px;font-weight:800;color:var(--gesso-fg);}
+.fin-row{display:flex;align-items:center;justify-content:space-between;}
+.fin-left{display:flex;flex-direction:column;gap:4px;}
+.fin-left .lbl{font-size:13px;color:var(--gesso-fg-muted);font-weight:600;}
+.fin-left .val{font-family:"Manrope",sans-serif;font-size:32px;line-height:34px;font-weight:800;color:var(--gesso-fg);}
+.fin-cta{background:var(--gesso-accent);color:#fff;border:0;border-radius:9999px;padding:12px 20px;font-size:14px;font-weight:800;font-family:"Manrope",sans-serif;display:flex;align-items:center;gap:8px;cursor:pointer;transition:transform 80ms ease,filter 160ms ease;}
+.fin-cta.secondary{background:var(--gesso-surface-recessed);color:var(--gesso-fg);border:1px solid rgba(0,0,0,.04);}
+.fin-cta:active{transform:scale(.96) translateY(1px);}
+.fin-cta .ic{width:16px;height:16px;}
+.reading-card{padding:16px!important;}
+.read-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.read-title{font-size:16px;font-weight:700;color:var(--gesso-fg);}
+.read-meta{font-size:13px;color:var(--gesso-fg-muted);}
+.book-cover{position:relative;width:64px;height:88px;flex-shrink:0;border-radius:4px 8px 8px 4px;background:linear-gradient(120deg,#4b5a8c,#6b78a8);box-shadow:0 3px 10px rgba(75,90,140,.35),inset 3px 0 0 rgba(0,0,0,.15),inset -1px 0 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;}
+.book-cover-spine{position:absolute;left:3px;top:0;bottom:0;width:3px;background:rgba(0,0,0,.18);}
+.book-cover svg{width:26px;height:26px;color:rgba(255,255,255,.85);}
+.book-pct{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);background:#fff;color:var(--gesso-fg);font-size:11px;font-weight:800;padding:2px 8px;border-radius:9999px;box-shadow:0 2px 6px rgba(0,0,0,.12);white-space:nowrap;}
+.bottom-nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(393px,100%);z-index:100;display:flex!important;justify-content:space-around;align-items:center;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:rgba(244,243,241,.92);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);}
+.bottom-nav .tab{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;padding:4px 12px;color:var(--gesso-fg-muted);transition:color 160ms ease,background 160ms ease;border-radius:9999px;min-width:0;}
+.bottom-nav .tab svg{width:24px;height:24px;stroke-width:2;}
+.bottom-nav .tab span{font-size:10px;font-weight:700;white-space:nowrap;}
+.bottom-nav .tab.active{color:var(--gesso-accent);background:var(--gesso-surface-recessed);}
+#homeSubtabs,.legacy-subtabs,#home-habit,#home-note,#home-finance,#compassRow{display:none!important;}
+#statsView{max-width:393px;margin:0 auto;min-height:100dvh;background:transparent;padding:48px 16px 108px!important;}
+@media(max-width:393px){#appScreen{max-width:none}.bottom-nav{width:100%}.page{padding-left:16px!important;padding-right:16px!important;}}
+@media(prefers-reduced-motion:reduce){.ring-progress{animation-duration:.01ms}.task-row,.task-check,.fin-cta,.bottom-nav .tab{transition:none!important}}
+</style>
