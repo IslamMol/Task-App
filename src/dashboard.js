@@ -3,7 +3,7 @@ import { escapeHtml } from './utils/dom.js';
 import { todayStr } from './utils/date.js';
 import { openAdd, toggleDone, toggleHabit } from './entries.js';
 import { getCurrencySymbol, getLocalAvatar } from './pages/settings.js';
-import { getHomeOrder, getTaskOrder } from './personalization.js';
+import { getHomeOrder } from './personalization.js';
 
 const DATA_COLORS=['#8f96a8','#c98a52','#4b5a8c','#5a9a7a','#b0576a'];
 function greeting(){const h=new Date().getHours(); return h<5?'Доброй ночи':h<12?'Доброе утро':h<18?'Добрый день':h<23?'Добрый вечер':'Доброй ночи';}
@@ -20,10 +20,10 @@ function financeSnapshot(){const sym=getCurrencySymbol(); return `<div class="fi
 function readingSnapshot(){const book=books()[0]; if(!book)return `<div class="reading-empty"><div class="empty-book">▢</div><div><strong>Пока нет книги</strong><span>Добавь книгу и следи за страницами.</span></div></div>`; const total=Number(book.progress_total)||0; const current=Math.max(0,Number(book.progress_current)||0); const pct=total?Math.min(100,Math.round(current/total*100)):0; const left=total?Math.max(0,total-current):0; return `<button class="reading-card" onclick="openReadingProgress('${book.id}')" aria-label="Открыть прогресс чтения"><div class="book-cover"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="1.8"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a2.5 2.5 0 0 1 0-5H20"/></svg><span class="book-pct">${pct}%</span></div><div class="read-text"><span class="read-title">${escapeHtml(book.title)}</span><span class="read-meta">Стр. ${current} из ${total||'?'} · осталось ${left||'—'}</span><div class="mini-progress"><span style="width:${pct}%"></span></div></div><span class="reading-edit">Изменить</span></button>`;}
 
 function homeSection(key,tasks,done,total){
-  if(key==='habit') return `<section data-home-section="habit"><div class="section-head"><h2>Привычки</h2><div class="section-actions"><button class="add-circle" onclick="window.setActiveAdd('habit');openAdd()">＋</button><button class="view-all" onclick="window.setActiveAdd('habit');openAdd()">Все ›</button></div></div><div style="margin-top:10px">${habitStrip()}</div></section>`;
-  if(key==='note') return `<section data-home-section="note"><div class="section-head"><h2>Задачи на сегодня</h2><div class="section-actions"><button class="add-circle" onclick="openAddForQuest()">＋</button><button class="view-all" onclick="switchMainTab('tasks')">Все ›</button></div></div><div style="margin-top:10px">${taskRows(tasks)}</div><div class="completed-card" style="margin-top:10px"><div><div class="completed-label">ВЫПОЛНЕНО СЕГОДНЯ</div><div class="completed-value">${done} из ${total}</div></div><button class="primary-pill" onclick="openAddForQuest()">＋ Задача</button></div></section>`;
-  if(key==='finance') return `<section data-home-section="finance"><div class="section-head"><h2>Финансы</h2><div class="section-actions"><button class="add-circle" onclick="openFinanceInfo('expense')">＋</button><button class="view-all" onclick="switchMainTab('finance')">Все ›</button></div></div><div style="margin-top:10px">${financeSnapshot()}</div></section>`;
-  if(key==='book') return `<section data-home-section="book" style="padding-bottom:10px"><div class="section-head"><h2>Чтение</h2><div class="section-actions"><button class="add-circle" onclick="window.setActiveAdd('book');openAdd()">＋</button><button class="view-all" onclick="window.setActiveAdd('book');switchMainTab('tasks');renderTasksPage('book')">Все</button></div></div><div style="margin-top:10px">${readingSnapshot()}</div></section>`;
+  if(key==='habit') return `<section><div class="section-head"><h2>Привычки</h2><div class="section-actions"><button class="add-circle" onclick="window.setActiveAdd('habit');openAdd()">＋</button><button class="view-all" onclick="window.setActiveAdd('habit');openAdd()">Все ›</button></div></div><div style="margin-top:10px">${habitStrip()}</div></section>`;
+  if(key==='note') return `<section><div class="section-head"><h2>Задачи на сегодня</h2><div class="section-actions"><button class="add-circle" onclick="openAddForQuest()">＋</button><button class="view-all" onclick="switchMainTab('tasks')">Все ›</button></div></div><div style="margin-top:10px">${taskRows(tasks)}</div><div class="completed-card" style="margin-top:10px"><div><div class="completed-label">ВЫПОЛНЕНО СЕГОДНЯ</div><div class="completed-value">${done} из ${total}</div></div><button class="primary-pill" onclick="openAddForQuest()">＋ Задача</button></div></section>`;
+  if(key==='finance') return `<section><div class="section-head"><h2>Финансы</h2><div class="section-actions"><button class="add-circle" onclick="openFinanceInfo('expense')">＋</button><button class="view-all" onclick="switchMainTab('finance')">Все ›</button></div></div><div style="margin-top:10px">${financeSnapshot()}</div></section>`;
+  if(key==='book') return `<section style="padding-bottom:10px"><div class="section-head"><h2>Чтение</h2><div class="section-actions"><button class="add-circle" onclick="window.setActiveAdd('book');openAdd()">＋</button><button class="view-all" onclick="window.setActiveAdd('book');switchMainTab('tasks');renderTasksPage('book')">Все</button></div></div><div style="margin-top:10px">${readingSnapshot()}</div></section>`;
   return '';
 }
 export function renderDashboard(){const root=document.getElementById('dashboardRoot');if(!root)return; const {tasks,done,total,pct}=completionStats(); const order=getHomeOrder(); root.innerHTML=`<div class="screen-stack"><header class="greeting"><div><div class="hi">${greeting()}, ${escapeHtml(displayName())}</div><h1>Сегодня</h1></div><button class="avatar-button" onclick="switchMainTab('settings')" aria-label="Мой путь">${avatarMarkup()}</button></header><section class="hero-card"><div class="ring-wrap"><svg viewBox="0 0 200 200" style="--p:${pct/100}"><circle cx="100" cy="100" r="80" fill="none" stroke="var(--gesso-surface-recessed)" stroke-width="16"/><circle class="ring-progress" cx="100" cy="100" r="80" fill="none" stroke="var(--gesso-accent)" stroke-width="16" stroke-linecap="round" stroke-dasharray="502" stroke-dashoffset="502" transform="rotate(-90 100 100)"/></svg><div class="ring-center"><span class="num">${pct}%</span><span class="lbl">ПУТИ ПРОЙДЕНО</span></div></div><p class="hero-sub">Из <strong>${total}</strong> пунктов на сегодня выполнено <strong>${done}</strong>. ${total&&done===total?'День завершён.':'Ещё немного — и день завершён.'}</p></section>${order.map(k=>homeSection(k,tasks,done,total)).join('')}</div>`;}
@@ -32,18 +32,37 @@ export function renderFinancePage(){const root=document.getElementById('financeR
 export function openFinanceInfo(kind='expense'){const title=kind==='expense'?'Расход':'Доход';const sym=getCurrencySymbol();const modal=document.createElement('div');modal.className='modal-bg';modal.onclick=e=>{if(e.target===modal)modal.remove()};modal.innerHTML=`<div class="modal"><div class="modal-handle"></div><h2>${title}</h2><label>Сумма<input type="number" id="financeAmount" inputmode="decimal" placeholder="0"></label><label>Категория<input id="financeCategory" placeholder="Еда, транспорт…"></label><label>Валюта<select id="financeCurrency">${['KZT ₸','RUB ₽','USD $','EUR €','GBP £','CNY ¥'].map(v=>`<option ${getCurrencySymbol()===v.split(' ')[1]?'selected':''}>${v}</option>`).join('')}</select></label><div class="finance-form-hint">Выбрано: <strong>${sym}</strong>. Сохранение в базу добавим после подключения финансовой таблицы.</div><button class="primary" onclick="this.closest('.modal-bg').remove()">Сохранить настройку</button><button class="ghost" onclick="this.closest('.modal-bg').remove()">Отмена</button></div>`;document.body.appendChild(modal);}
 export function openAddForQuest(){state.activeEntryType='quest';openAdd();}
 export function openHabitsSheet(){ state.taskSub='habit'; window.switchMainTab?.('tasks'); window.renderTasksPage?.('habit'); }
-export function renderTasksPage(active='quest'){
-  state.taskSub = active;
-  const root=document.getElementById('tasksRoot');
-  if(!root)return;
-  const quests=state.entries.filter(e=>e.type==='quest');
-  const booksList=books();
-  const hs=habits();
-  const order=getTaskOrder();
-  const labels={quest:'Квесты',book:'Книги',habit:'Привычки'};
-  const tabs=order.map(key=>`<button data-task-tab="${key}" class="${active===key?'active':''}" onclick="renderTasksPage('${key}')">${labels[key]}</button>`).join('');
-  const content=active==='quest'?renderQuestPage(quests):active==='book'?renderBookPage(booksList):renderHabitPage(hs);
-  root.innerHTML=`<div class="screen-stack"><div class="page-heading-row"><div><div class="meta-small">Раздел</div><h1 class="page-title">Задачи</h1></div><button class="primary-icon-button" onclick="${active==='book'?'window.setActiveAdd(\'book\');openAdd()':active==='habit'?'window.setActiveAdd(\'habit\');openAdd()':'openAddForQuest()'}">＋</button></div><div class="segmented" data-task-tabs>${tabs}</div><div data-task-content="${active}">${content}</div></div>`;
+export function renderTasksPage(active='quest'){const root=document.getElementById('tasksRoot');if(!root)return;const quests=state.entries.filter(e=>e.type==='quest');const booksList=books();const hs=habits();root.innerHTML=`<div class="screen-stack"><div class="page-heading-row"><div><div class="meta-small">Раздел</div><h1 class="page-title">Задачи</h1></div><button class="primary-icon-button" onclick="${active==='book'?'window.setActiveAdd(\'book\');openAdd()':active==='habit'?'window.setActiveAdd(\'habit\');openAdd()':'openAddForQuest()'}">＋</button></div><div class="segmented"><button class="${active==='quest'?'active':''}" onclick="renderTasksPage('quest')">Квесты</button><button class="${active==='book'?'active':''}" onclick="renderTasksPage('book')">Книги</button><button class="${active==='habit'?'active':''}" onclick="renderTasksPage('habit')">Привычки</button></div>${active==='quest'?renderQuestPage(quests):active==='book'?renderBookPage(booksList):renderHabitPage(hs)}</div>`;}
+function emptyBlock(icon,title,sub,buttonLabel,type){return `<div class="empty-page"><div class="empty-icon big">${icon}</div><strong>${title}</strong><span>${sub}</span><button class="primary-pill" onclick="window.setActiveAdd('${type}');openAdd()">＋ ${buttonLabel}</button></div>`;}
+function renderQuestPage(items){if(!items.length)return emptyBlock('✓','Пока пусто','Добавь первую задачу и собери свой день.','Задача','quest'); return items.map(e=>`<div class="list-card"><div class="list-row"><button class="task-check ${e.done?'done':''}" onclick="toggleDone('${e.id}',${!e.done},this)">${e.done?'✓':''}</button><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:800;${e.done?'text-decoration:line-through;color:var(--gesso-fg-muted)':''}">${escapeHtml(e.title)}</div><div class="meta-small">${escapeHtml(e.category||'Квест')}</div></div><button class="icon-plain" onclick="deleteEntry('${e.id}')">✕</button></div></div>`).join('');}
+function renderHabitPage(items){if(!items.length)return emptyBlock('◎','Пока пусто','Создай привычку, которую хочешь закрепить.','Привычку','habit');return items.map(h=>`<div class="list-card"><div class="list-row"><button class="task-check ${h.last_done_date===todayStr()?'done':''}" onclick="toggleHabit('${h.id}',this)">${h.last_done_date===todayStr()?'✓':''}</button><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:800">${escapeHtml(h.title)}</div><div class="meta-small">🔥 ${Number(h.streak)||0} дн. подряд</div></div><button class="icon-plain" onclick="deleteEntry('${h.id}')">✕</button></div></div>`).join('');}
+function renderBookPage(items){
+  if(!items.length)return emptyBlock('▢','Пока нет книг','Добавь книгу и отмечай прогресс по страницам.','Книгу','book');
+  return items.map(e=>{
+    const total=Number(e.progress_total)||0;
+    const current=Math.min(Math.max(0,Number(e.progress_current)||0), total || Number.MAX_SAFE_INTEGER);
+    const pct=total?Math.min(100,Math.round(current/total*100)):0;
+    const left=total?Math.max(0,total-current):0;
+    return `<div class="list-card book-progress-card">
+      <div class="list-row" style="align-items:flex-start">
+        <div class="book-cover small"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a2.5 2.5 0 0 0-2 1"/></svg><span class="book-pct">${pct}%</span></div>
+        <div style="min-width:0;flex:1">
+          <div style="font-size:13px;font-weight:800">${escapeHtml(e.title)}</div>
+          <div class="meta-small" style="margin-top:3px">${current} из ${total||'?'} стр. · осталось ${left||'—'}</div>
+          <div class="mini-progress"><span style="width:${pct}%"></span></div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:9px;flex-wrap:wrap">
+            <button class="stepper-btn" onclick="adjustBookPage('${e.id}',-10)" aria-label="Минус 10 страниц">−10</button>
+            <button class="stepper-btn" onclick="adjustBookPage('${e.id}',-1)" aria-label="Минус 1 страницу">−1</button>
+            <button class="current-page-pill" onclick="openReadingProgress('${e.id}')" aria-label="Изменить текущую страницу">Страница ${current}</button>
+            <button class="stepper-btn" onclick="adjustBookPage('${e.id}',1)" aria-label="Плюс 1 страницу">+1</button>
+            <button class="stepper-btn" onclick="adjustBookPage('${e.id}',10)" aria-label="Плюс 10 страниц">+10</button>
+          </div>
+          <button class="primary-pill reading-progress-btn" onclick="openReadingProgress('${e.id}')">Обновить прогресс</button>
+        </div>
+        <button class="icon-plain" onclick="deleteEntry('${e.id}')" aria-label="Удалить книгу">✕</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 export function adjustBookPage(id, delta){
