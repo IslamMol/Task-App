@@ -3,7 +3,7 @@ import { escapeHtml } from './utils/dom.js';
 import { todayStr } from './utils/date.js';
 import { openAdd, toggleDone, toggleHabit } from './entries.js';
 import { getCurrencySymbol, getLocalAvatar } from './pages/settings.js';
-import { getHomeOrder } from './personalization.js';
+import { getHomeOrder, getTaskOrder } from './personalization.js';
 
 const DATA_COLORS=['#8f96a8','#c98a52','#4b5a8c','#5a9a7a','#b0576a'];
 function greeting(){const h=new Date().getHours(); return h<5?'Доброй ночи':h<12?'Доброе утро':h<18?'Добрый день':h<23?'Добрый вечер':'Доброй ночи';}
