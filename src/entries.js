@@ -161,51 +161,43 @@ export async function deleteEntry(id){
   enqueue('entries', 'delete', { id });
 }
 
+const CATEGORY_PRESETS=['Покупка','Спорт','Обещание','Стоит сделать','Не забыть','Жду'];
+function categoryPicker(current=''){
+  return `<div class="category-picker"><div class="category-label">Категория</div><div class="category-options">${CATEGORY_PRESETS.map(c=>`<button type="button" class="category-chip" data-category="${c}" onclick="pickCategory('${c}')">${c}</button>`).join('')}</div><div class="custom-category-wrap"><span>Или своя</span><input id="newCustomCategory" placeholder="Напишите категорию" value="${escapeHtml(current)}"></div><input type="hidden" id="newCategory" value="${escapeHtml(current)}"></div>`;
+}
+export function pickCategory(value){
+  const hidden=document.getElementById('newCategory'); const input=document.getElementById('newCustomCategory');
+  if(hidden) hidden.value=value; if(input) input.value='';
+  document.querySelectorAll('.category-chip').forEach(b=>b.classList.toggle('active',b.dataset.category===value));
+}
+function categoryFromForm(){
+  const own=document.getElementById('newCustomCategory')?.value.trim();
+  if(own) return own;
+  return document.getElementById('newCategory')?.value.trim()||'';
+}
+
 export function openAdd(){
-  const isBook = state.activeEntryType === 'book';
-  const goals = state.compassItems.filter(c => c.kind === 'goal');
-  const modal = document.createElement('div');
-  modal.className = 'modal-bg';
-  modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
-  modal.innerHTML = `
-    <div class="modal">
-      <div class="modal-handle"></div>
-      <h2>Новая запись</h2>
-      <input id="newTitle" placeholder="Название" autocomplete="off">
-      ${!isBook ? '<input id="newCat" placeholder="Категория (Купить / Не забыть / Сделать / Попробовать)">' : ''}
-      ${isBook ? '<input id="newTotal" type="number" placeholder="Всего страниц">' : ''}
-      ${isBook && goals.length ? `<select id="newGoal"><option value="">Не связано с целью</option>${goals.map(g=>`<option value="${g.id}">🎯 ${escapeHtml(g.title||'Цель')}</option>`).join('')}</select>` : ''}
-      <button class="primary" onclick="saveNew(${isBook})">Сохранить</button>
-      <button class="ghost" onclick="this.closest('.modal-bg').remove()">Отмена</button>
-    </div>`;
+  const isBook=state.activeEntryType==='book';
+  const kind=state.activeEntryType==='habit'?'Привычка':state.activeEntryType==='book'?'Книга':state.activeEntryType==='note'?'Дело':'Задача';
+  const goals=state.compassItems.filter(c=>c.kind==='goal');
+  const modal=document.createElement('div'); modal.className='modal-bg'; modal.onclick=e=>{if(e.target===modal)modal.remove()};
+  modal.innerHTML=`<div class="modal apple-sheet add-entry-sheet">
+    <div class="modal-handle"></div>
+    <div class="sheet-title-row"><div><div class="meta-small">Новая запись</div><h2>${kind}</h2></div><button class="sheet-close" onclick="this.closest('.modal-bg').remove()">×</button></div>
+    <label>Название<input id="newTitle" placeholder="Например, Прочитать 20 страниц" autocomplete="off"></label>
+    ${isBook?`<label>Всего страниц<input id="newTotal" type="number" min="1" inputmode="numeric" placeholder="Например, 320"></label>${goals.length?`<label>Цель<select id="newGoal"><option value="">Без цели</option>${goals.map(g=>`<option value="${g.id}">🎯 ${escapeHtml(g.title||'Цель')}</option>`).join('')}</select></label>`:''}`:''}
+    ${!isBook?categoryPicker():''}
+    <button class="primary sheet-primary" onclick="saveNew(${isBook})">Добавить</button>
+    <button class="ghost sheet-cancel" onclick="this.closest('.modal-bg').remove()">Отмена</button>
+  </div>`;
   document.body.appendChild(modal);
+  modal.querySelector('#newTitle')?.focus();
 }
 
 export async function saveNew(isBook){
-  const title = document.getElementById('newTitle').value.trim();
-  if(!title) return;
-  const now = new Date().toISOString();
-  const row = {
-    id: crypto.randomUUID(),
-    type: state.activeEntryType,
-    title,
-    user_id: state.session.user.id,
-    created_at: now,
-    updated_at: now,
-    done: false,
-  };
-  if(isBook){
-    row.progress_total = Number(document.getElementById('newTotal').value) || null;
-    row.progress_current = 0;
-    const goalSel = document.getElementById('newGoal');
-    if(goalSel && goalSel.value) row.goal_id = goalSel.value;
-  } else {
-    const cat = document.getElementById('newCat');
-    if(cat) row.category = cat.value.trim();
-  }
-  state.entries.unshift(row);
-  document.querySelector('.modal-bg').remove();
-  renderList();
-  cacheEntries([row]);
-  enqueue('entries', 'insert', row);
+  const title=document.getElementById('newTitle')?.value.trim(); if(!title)return;
+  const now=new Date().toISOString(); const row={id:crypto.randomUUID(),type:state.activeEntryType,title,user_id:state.session.user.id,created_at:now,updated_at:now,done:false};
+  if(isBook){ row.progress_total=Math.max(1,Number(document.getElementById('newTotal')?.value)||1); row.progress_current=0; const goalSel=document.getElementById('newGoal'); if(goalSel?.value)row.goal_id=goalSel.value; }
+  else { row.category=categoryFromForm(); }
+  state.entries.unshift(row); document.querySelector('.modal-bg')?.remove(); renderList(); cacheEntries([row]); enqueue('entries','insert',row);
 }

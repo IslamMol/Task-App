@@ -1,27 +1,27 @@
-import { toggleTheme, applyTheme } from './theme.js';
+import { toggleTheme, applyTheme, setTheme } from './theme.js';
 import { init, toggleAuthMode, signIn, signUp } from './auth.js';
 import { openCompass, saveCompass, savePathTitle, addJournalEntry } from './compass.js';
-import { toggleDone, toggleHabit, updatePage, deleteEntry, openAdd, saveNew } from './entries.js';
+import { toggleDone, toggleHabit, updatePage, deleteEntry, openAdd, saveNew, pickCategory } from './entries.js';
 import { switchMainTab, switchHomeSub, switchTaskSub, initPagerSync, fabClick, toggleStatsView } from './nav.js';
 import { renderDashboard, renderTasksPage, renderFinancePage, openFinanceInfo, openAddForQuest, openHabitsSheet, setActiveAdd } from './dashboard.js';
 import { onSyncStatusChange, syncState } from './db/sync.js';
-import { renderCalendar, openEventAdd, saveNewEvent, addEventToPhoneCalendar, selectCalendarDate, changeCalendarMonth, setRelativeDay, goToday } from './pages/calendar.js';
-import { saveAvatar, handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings } from './pages/settings.js';
-import { moveHomeItem, moveTaskItem, startReorder, finishReorder } from './personalization.js';
+import { renderCalendar, openEventAdd, saveNewEvent, saveEventEdit, editEvent, deleteCalendarEvent, addEventToPhoneCalendar, selectCalendarDate, changeCalendarMonth, setRelativeDay, goToday } from './pages/calendar.js';
+import { saveAvatar, handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings } from './pages/settings.js';
+import { moveHomeItem, moveTaskItem, moveCalendarItem, startReorder, finishReorder } from './personalization.js';
 
 // index.html до сих пор использует инлайновые onclick="..." атрибуты —
 // это сохранено намеренно (см. Этап 2), поэтому нужные функции явно
 // выставляются в window.
 Object.assign(window, {
-  toggleTheme,
+  toggleTheme, setTheme,
   toggleAuthMode, signIn, signUp,
   openCompass, saveCompass, savePathTitle, addJournalEntry,
-  toggleDone, toggleHabit, updatePage, deleteEntry, openAdd, saveNew,
+  toggleDone, toggleHabit, updatePage, deleteEntry, openAdd, saveNew, pickCategory,
   switchMainTab, switchHomeSub, switchTaskSub, fabClick, toggleStatsView,
   renderDashboard, renderTasksPage, renderFinancePage, openFinanceInfo, openAddForQuest, openHabitsSheet, setActiveAdd,
-  renderCalendar, openEventAdd, saveNewEvent, addEventToPhoneCalendar, selectCalendarDate, changeCalendarMonth, setRelativeDay, goToday,
-  saveAvatar, handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings,
-  moveHomeItem, moveTaskItem, startReorder, finishReorder,
+  renderCalendar, openEventAdd, saveNewEvent, saveEventEdit, editEvent, deleteCalendarEvent, addEventToPhoneCalendar, selectCalendarDate, changeCalendarMonth, setRelativeDay, goToday,
+  saveAvatar, handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings,
+  moveHomeItem, moveTaskItem, moveCalendarItem, startReorder, finishReorder,
 });
 
 applyTheme();

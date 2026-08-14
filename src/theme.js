@@ -1,17 +1,20 @@
 export function applyTheme(){
-  const saved = localStorage.getItem('theme') || 'light';
-  document.documentElement.setAttribute('data-theme', saved);
-  const btn = document.getElementById('themeToggle');
-  if(btn){
-    btn.setAttribute('aria-pressed', saved === 'dark' ? 'true' : 'false');
-    const label = btn.querySelector('.theme-label');
-    if(label) label.textContent = saved === 'dark' ? 'Тёмная' : 'Светлая';
-  }
+  const saved=localStorage.getItem('theme')||'light';
+  document.documentElement.setAttribute('data-theme',saved);
+  const btn=document.getElementById('themeToggle');
+  if(btn) updateThemeButton(btn,saved);
 }
-
+function updateThemeButton(btn,theme){
+  btn.setAttribute('aria-pressed',theme==='dark'?'true':'false');
+  btn.querySelectorAll('[data-theme-choice]').forEach(el=>el.classList.toggle('active',el.dataset.themeChoice===theme));
+}
+export function setTheme(theme){
+  const next=theme==='dark'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('theme',next);
+  const btn=document.getElementById('themeToggle'); if(btn) updateThemeButton(btn,next);
+}
 export function toggleTheme(){
-  const cur = document.documentElement.getAttribute('data-theme') || 'light';
-  const next = cur === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('theme', next);
-  applyTheme();
+  const current=document.documentElement.getAttribute('data-theme')||'light';
+  setTheme(current==='dark'?'light':'dark');
 }
