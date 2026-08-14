@@ -12,7 +12,16 @@ function readOrder(key, fallback){
     return Array.isArray(parsed) && parsed.length ? parsed : [...fallback];
   } catch { return [...fallback]; }
 }
-function writeOrder(key, order, cb){ localStorage.setItem(key, JSON.stringify(order)); cb?.(); window.renderSettings?.(); }
+function writeOrder(key, order, cb){
+  localStorage.setItem(key, JSON.stringify(order));
+  cb?.();
+  queueMicrotask(() => {
+    window.renderSettings?.();
+    window.renderDashboard?.();
+    window.renderTasksPage?.();
+    window.renderCalendar?.();
+  });
+}
 function reorder(order, from, to){
   if(from===to || from<0 || to<0 || from>=order.length || to>=order.length) return order;
   const next=[...order]; const [item]=next.splice(from,1); next.splice(to,0,item); return next;
@@ -40,7 +49,12 @@ export function dropHomeItem(sub,target){ const o=getHomeOrder(); setHomeOrder(r
 export function dropTaskItem(sub,target){ const o=getTaskOrder(); setTaskOrder(reorder(o,o.indexOf(sub),o.indexOf(target))); }
 export function dropCalendarItem(sub,target){ const o=getCalendarOrder(); setCalendarOrder(reorder(o,o.indexOf(sub),o.indexOf(target))); }
 
-export function renderSubtabs(){ }
+export function renderSubtabs(){
+  window.renderDashboard?.();
+  window.renderTasksPage?.();
+  window.renderCalendar?.();
+  window.renderSettings?.();
+}
 export function startReorder(event,type,key){ event.dataTransfer?.setData('text/plain',JSON.stringify({type,key})); }
 export function finishReorder(event,type,target){
   event.preventDefault();

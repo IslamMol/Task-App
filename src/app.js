@@ -7,7 +7,7 @@ import { renderDashboard, renderTasksPage, renderFinancePage, openFinanceInfo, o
 import { onSyncStatusChange, syncState } from './db/sync.js';
 import { renderCalendar, openEventAdd, saveNewEvent, saveEventEdit, editEvent, deleteCalendarEvent, addEventToPhoneCalendar, selectCalendarDate, changeCalendarMonth, setRelativeDay, goToday } from './pages/calendar.js';
 import { saveAvatar, handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings } from './pages/settings.js';
-import { moveHomeItem, moveTaskItem, moveCalendarItem, startReorder, finishReorder } from './personalization.js';
+import { moveHomeItem, moveTaskItem, moveCalendarItem, startReorder, finishReorder, dropHomeItem, dropTaskItem, dropCalendarItem } from './personalization.js';
 
 // index.html до сих пор использует инлайновые onclick="..." атрибуты —
 // это сохранено намеренно (см. Этап 2), поэтому нужные функции явно
@@ -21,7 +21,7 @@ Object.assign(window, {
   renderDashboard, renderTasksPage, renderFinancePage, openFinanceInfo, openAddForQuest, openHabitsSheet, setActiveAdd,
   renderCalendar, openEventAdd, saveNewEvent, saveEventEdit, editEvent, deleteCalendarEvent, addEventToPhoneCalendar, selectCalendarDate, changeCalendarMonth, setRelativeDay, goToday,
   saveAvatar, handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings,
-  moveHomeItem, moveTaskItem, moveCalendarItem, startReorder, finishReorder,
+  moveHomeItem, moveTaskItem, moveCalendarItem, startReorder, finishReorder, dropHomeItem, dropTaskItem, dropCalendarItem,
 });
 
 applyTheme();
