@@ -33,6 +33,16 @@ export async function saveAvatar(){ }
 function renderThemeToggle(theme){
   return `<div class="theme-segment" id="themeToggle" aria-label="Выбор темы">${themeOptions.map(([key,label])=>`<button type="button" data-theme-choice="${key}" class="theme-choice ${theme===key?'active':''}" onclick="setTheme('${key}')"><span class="theme-icon">${key==='light'?'☀':'◐'}</span><span>${label}</span></button>`).join('')}</div>`;
 }
+const ORDER_UI_STYLE = `
+<style id="apple-order-controls">
+.reorder-inline-actions{display:flex;align-items:center;gap:6px;margin-left:auto;}
+.apple-step-btn{width:32px;height:32px;border:0;border-radius:999px;background:rgba(118,118,128,.12);color:#4b5a8c;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 32px;-webkit-tap-highlight-color:transparent;transition:transform 120ms ease,background 160ms ease,color 160ms ease,opacity 160ms ease;}
+.apple-step-btn svg{width:17px;height:17px;display:block;}
+.apple-step-btn:not(:disabled):active{transform:scale(.92);background:rgba(75,90,140,.18);}
+.apple-step-btn:not(:disabled):hover{background:rgba(75,90,140,.15);}
+.apple-step-btn:disabled{opacity:.28;cursor:default;}
+.apple-step-btn:focus-visible{outline:2px solid rgba(75,90,140,.28);outline-offset:2px;}
+</style>`;
 function renderOrderRows(container,order,type,labels){
   if(!container) return;
   container.innerHTML = order.map((key, idx) => `
@@ -41,8 +51,8 @@ function renderOrderRows(container,order,type,labels){
         <span class="drag-grip">⠿</span><span>${labels[key] || key}</span>
       </button>
       <div class="reorder-inline-actions">
-        <button type="button" class="reorder-step" data-step="-1" data-type="${type}" data-key="${key}" ${idx===0?'disabled':''} aria-label="Выше">⌃</button>
-        <button type="button" class="reorder-step" data-step="1" data-type="${type}" data-key="${key}" ${idx===order.length-1?'disabled':''} aria-label="Ниже">⌄</button>
+        <button type="button" class="reorder-step apple-step-btn" data-step="-1" data-type="${type}" data-key="${key}" ${idx===0?'disabled':''} aria-label="Выше"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.5 14.5 5.5-5.5 5.5 5.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></button>
+        <button type="button" class="reorder-step apple-step-btn" data-step="1" data-type="${type}" data-key="${key}" ${idx===order.length-1?'disabled':''} aria-label="Ниже"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.5 9.5 5.5 5.5 5.5-5.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></button>
       </div>
     </div>`).join('');
 
@@ -55,6 +65,7 @@ function renderOrderRows(container,order,type,labels){
 
 export function renderSettings(){
   const view=document.getElementById('settingsView'); if(!view)return;
+  if(!document.getElementById('apple-order-controls')) document.head.insertAdjacentHTML('beforeend', ORDER_UI_STYLE);
   const email=state.session?.user?.email||''; const name=state.session?.user?.user_metadata?.name||email.split('@')[0]||'Пользователь';
   const avatar=getLocalAvatar(); const theme=document.documentElement.getAttribute('data-theme')||'light'; const currency=getCurrency();
   view.innerHTML=`<div class="screen-stack settings-stack">
