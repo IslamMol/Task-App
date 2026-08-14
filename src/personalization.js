@@ -18,8 +18,8 @@ export function getTaskOrder(){
   try { return JSON.parse(localStorage.getItem('taskOrder')) || TASK_SUBTABS_DEFAULT; }
   catch { return TASK_SUBTABS_DEFAULT; }
 }
-export function setHomeOrder(order){ localStorage.setItem('homeOrder', JSON.stringify(order)); renderSubtabs(); }
-export function setTaskOrder(order){ localStorage.setItem('taskOrder', JSON.stringify(order)); renderSubtabs(); }
+export function setHomeOrder(order){ localStorage.setItem('homeOrder', JSON.stringify(order)); renderSubtabs(); if(window.renderSettings) window.renderSettings(); }
+export function setTaskOrder(order){ localStorage.setItem('taskOrder', JSON.stringify(order)); renderSubtabs(); if(window.renderSettings) window.renderSettings(); }
 
 export function moveHomeItem(sub, dir){
   const order = getHomeOrder();
