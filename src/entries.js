@@ -1,6 +1,6 @@
 import { sb } from './services/supabase.js';
 import { state } from './state.js';
-import { TYPE_COLOR, CATEGORY_EMOJI, TAB_ORDER } from './constants.js';
+import { TYPE_COLOR, CATEGORY_EMOJI, CONTAINER_ID } from './constants.js';
 import { escapeHtml } from './utils/dom.js';
 import { todayStr, yesterdayStr } from './utils/date.js';
 import { renderStats } from './stats.js';
@@ -70,14 +70,19 @@ export function cardHtml(e){
 }
 
 export function renderList(){
-  TAB_ORDER.forEach(type => {
-    const el = document.getElementById('list-' + type);
+  Object.entries(CONTAINER_ID).forEach(([type, containerId]) => {
+    const el = document.getElementById(containerId);
+    if(!el) return;
     const items = state.entries.filter(e => e.type === type);
     el.innerHTML = items.length === 0
       ? '<div class="empty">Пока пусто. Нажми + чтобы добавить</div>'
       : items.map(cardHtml).join('');
   });
-  if(state.currentTab === 'stats'){ renderStats(document.getElementById('statsView')); }
+  // Если сейчас открыта статистика — держим её в актуальном состоянии
+  // тоже (иначе, например, только что отмеченный квест не обновит цифры
+  // на экране статистики, пока его не закрыть и не открыть заново).
+  const statsView = document.getElementById('statsView');
+  if(statsView && statsView.style.display === 'block'){ renderStats(statsView); }
 }
 
 // --- Ниже: все изменяющие операции идут по одной схеме (local-first) ---
@@ -138,7 +143,7 @@ export async function deleteEntry(id){
 }
 
 export function openAdd(){
-  const isBook = state.currentTab === 'book';
+  const isBook = state.activeEntryType === 'book';
   const goals = state.compassItems.filter(c => c.kind === 'goal');
   const modal = document.createElement('div');
   modal.className = 'modal-bg';
@@ -162,7 +167,7 @@ export async function saveNew(isBook){
   const now = new Date().toISOString();
   const row = {
     id: crypto.randomUUID(),
-    type: state.currentTab,
+    type: state.activeEntryType,
     title,
     user_id: state.session.user.id,
     created_at: now,

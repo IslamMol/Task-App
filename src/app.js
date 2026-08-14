@@ -2,24 +2,29 @@ import { toggleTheme, applyTheme } from './theme.js';
 import { init, toggleAuthMode, signIn, signUp } from './auth.js';
 import { openCompass, saveCompass, savePathTitle, addJournalEntry } from './compass.js';
 import { toggleDone, toggleHabit, updatePage, deleteEntry, openAdd, saveNew } from './entries.js';
-import { switchTab, initPagerSync } from './nav.js';
+import { switchMainTab, switchHomeSub, switchTaskSub, initPagerSync, fabClick, toggleStatsView } from './nav.js';
 import { onSyncStatusChange, syncState } from './db/sync.js';
+import { openEventAdd, saveNewEvent, addEventToPhoneCalendar } from './pages/calendar.js';
+import { saveAvatar, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount } from './pages/settings.js';
+import { moveHomeItem, moveTaskItem } from './personalization.js';
 
 // index.html до сих пор использует инлайновые onclick="..." атрибуты —
-// это сохранено намеренно (Этап 2 = только структура, без изменения
-// поведения), поэтому нужные функции явно выставляются в window.
+// это сохранено намеренно (см. Этап 2), поэтому нужные функции явно
+// выставляются в window.
 Object.assign(window, {
   toggleTheme,
   toggleAuthMode, signIn, signUp,
   openCompass, saveCompass, savePathTitle, addJournalEntry,
   toggleDone, toggleHabit, updatePage, deleteEntry, openAdd, saveNew,
-  switchTab,
+  switchMainTab, switchHomeSub, switchTaskSub, fabClick, toggleStatsView,
+  openEventAdd, saveNewEvent, addEventToPhoneCalendar,
+  saveAvatar, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount,
+  moveHomeItem, moveTaskItem,
 });
 
 applyTheme();
 
 // Тонкая точка в шапке — статус фоновой синхронизации.
-// Классы совпадают со значениями syncState.status: synced/syncing/offline/error.
 function updateSyncDot(status){
   const dot = document.getElementById('syncDot');
   if(!dot) return;
