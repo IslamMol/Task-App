@@ -20,7 +20,7 @@ export async function init(){
 export function showAuth(){
   document.getElementById('authScreen').style.display = 'flex';
   document.getElementById('appScreen').style.display = 'none';
-  document.getElementById('fab').style.display = 'none';
+  const fab=document.getElementById('fab'); if(fab) fab.style.display='none';
 }
 
 export function toggleAuthMode(){
@@ -57,7 +57,7 @@ export async function showApp(){
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('appScreen').style.display = 'block';
   document.getElementById('bottomNav').style.display = 'flex';
-  document.getElementById('userEmail').textContent = state.session.user.email;
+  const userEmail=document.getElementById('userEmail'); if(userEmail) userEmail.textContent=state.session.user.email;
   applyTheme();
   await ensureCompass();
   await loadEntries();
