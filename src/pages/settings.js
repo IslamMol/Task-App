@@ -1,6 +1,6 @@
 import { state } from '../state.js';
 import { sb } from '../services/supabase.js';
-import { getHomeOrder, getTaskOrder, getCalendarOrder, SUB_LABELS, HOME_LABELS, CALENDAR_LABELS } from '../personalization.js';
+import { getHomeOrder, getTaskOrder, getCalendarOrder, moveHomeItem, moveTaskItem, moveCalendarItem, SUB_LABELS, HOME_LABELS, CALENDAR_LABELS } from '../personalization.js';
 import { setTheme } from '../theme.js';
 
 const currencyOptions=['KZT ₸','USD $','EUR €','GBP £','RUB ₽','UAH ₴','CNY ¥','Custom'];
@@ -34,11 +34,23 @@ function renderThemeToggle(theme){
   return `<div class="theme-segment" id="themeToggle" aria-label="Выбор темы">${themeOptions.map(([key,label])=>`<button type="button" data-theme-choice="${key}" class="theme-choice ${theme===key?'active':''}" onclick="setTheme('${key}')"><span class="theme-icon">${key==='light'?'☀':'◐'}</span><span>${label}</span></button>`).join('')}</div>`;
 }
 function renderOrderRows(container,order,type,labels){
-  if(!container)return;
-  container.innerHTML=order.map(key=>`<div class="settings-row reorder-row" draggable="true" ondragstart="startReorder(event,'${type}','${key}')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="finishReorder(event,'${type}','${key}')">
-    <button class="reorder-main reorder-open" onclick="openReorderMenu('${type}','${key}')" aria-label="Изменить порядок"><span class="drag-grip">⠿</span><span>${labels[key]}</span></button>
-    <span class="reorder-chevron">›</span>
-  </div>`).join('');
+  if(!container) return;
+  container.innerHTML = order.map((key, idx) => `
+    <div class="settings-row reorder-row" data-order-type="${type}" data-order-key="${key}">
+      <button class="reorder-main reorder-open" type="button" data-open-reorder="${type}" data-reorder-key="${key}" aria-label="Изменить порядок">
+        <span class="drag-grip">⠿</span><span>${labels[key] || key}</span>
+      </button>
+      <div class="reorder-inline-actions">
+        <button type="button" class="reorder-step" data-step="-1" data-type="${type}" data-key="${key}" ${idx===0?'disabled':''} aria-label="Выше">⌃</button>
+        <button type="button" class="reorder-step" data-step="1" data-type="${type}" data-key="${key}" ${idx===order.length-1?'disabled':''} aria-label="Ниже">⌄</button>
+      </div>
+    </div>`).join('');
+
+  container.querySelectorAll('[data-open-reorder]').forEach(btn=>btn.addEventListener('click',()=>openReorderMenu(btn.dataset.openReorder,btn.dataset.reorderKey)));
+  container.querySelectorAll('.reorder-step').forEach(btn=>btn.addEventListener('click',()=>{
+    const type=btn.dataset.type, key=btn.dataset.key, dir=Number(btn.dataset.step);
+    moveReorderByDirection(type,key,dir);
+  }));
 }
 
 export function renderSettings(){
@@ -47,17 +59,11 @@ export function renderSettings(){
   const avatar=getLocalAvatar(); const theme=document.documentElement.getAttribute('data-theme')||'light'; const currency=getCurrency();
   view.innerHTML=`<div class="screen-stack settings-stack">
     <div class="settings-profile"><div class="settings-avatar">${avatar?`<img src="${avatar}" alt="">`:`<span>${avatarInitial()}</span>`}</div><div style="min-width:0"><div class="settings-name">${name}</div><div class="settings-email">${email}</div></div></div>
-
     <section class="settings-block"><div class="settings-kicker">Аватарка</div><div class="avatar-editor-pro"><label class="avatar-upload-pro"><input type="file" accept="image/*" onchange="handleAvatarUpload(this)"><span class="settings-icon-circle">＋</span><span>Загрузить фото</span></label><div class="avatar-presets">${presetAvatar('1','#5f6f9f')}${presetAvatar('2','#7f8a74')}${presetAvatar('3','#b97c61')}${presetAvatar('4','#8b6f96')}</div></div><div class="settings-caption" style="margin-top:8px">Фото автоматически обрезается по кругу, без пустых полей.</div></section>
-
     <section class="settings-block"><div class="settings-kicker">Внешний вид</div><div class="settings-mainline" style="margin-bottom:9px">Тема</div>${renderThemeToggle(theme)}</section>
-
-    <section class="settings-block"><div class="settings-kicker">Порядок интерфейса</div><div class="settings-section-label">Главная</div><div data-order="home"></div><div class="settings-section-label">Задачи</div><div data-order="task"></div><div class="settings-section-label">Календарь</div><div data-order="calendar"></div><div class="settings-caption" style="margin-top:8px">Нажми строку, чтобы открыть красивое меню перестановки. На компьютере можно также перетащить её за ⠿.</div></section>
-
+    <section class="settings-block"><div class="settings-kicker">Порядок интерфейса</div><div class="settings-section-label">Главная</div><div data-order="home"></div><div class="settings-section-label">Задачи</div><div data-order="task"></div><div class="settings-section-label">Календарь</div><div data-order="calendar"></div><div class="settings-caption" style="margin-top:8px">Открой пункт и выбери его позицию. Кнопки ↑/↓ работают на телефоне без drag-and-drop.</div></section>
     <section class="settings-block"><div class="settings-kicker">Валюта</div><div class="currency-grid">${currencyOptions.map(v=>`<button class="currency-chip ${currency===v?'active':''}" onclick="setCurrency('${v}')">${v}</button>`).join('')}</div>${currency==='Custom'?`<input class="input-line" style="margin-top:9px" placeholder="Например USD или ₸" value="${localStorage.getItem('customCurrency')||''}" oninput="setCustomCurrency(this.value)">`:''}<div class="settings-caption" style="margin-top:8px">Финансовую таблицу можно подключить позже, а валюта уже используется в интерфейсе.</div></section>
-
     <section class="settings-block"><div class="settings-kicker">Язык</div><div class="lang-row"><button class="lang-pill ${state.lang==='ru'?'active':''}" onclick="setAppLang('ru')">Русский</button><button class="lang-pill ${state.lang==='en'?'active':''}" onclick="setAppLang('en')">English</button></div></section>
-
     <section class="settings-block"><div class="settings-kicker">Аккаунт</div><input class="input-line" id="newEmailInput" placeholder="Новая почта"><button class="primary-pill" style="width:100%;margin-top:9px" onclick="changeEmail()">Сменить почту</button><input class="input-line" id="newPasswordInput" type="password" placeholder="Новый пароль" style="margin-top:9px"><button class="primary-pill" style="width:100%;margin-top:9px" onclick="changePassword()">Сменить пароль</button><div class="meta-small" id="accountMsg" style="margin-top:8px"></div><button class="secondary-pill" style="width:100%;margin-top:9px" onclick="logout()">Выйти из аккаунта</button><button class="secondary-pill danger" style="width:100%;margin-top:6px" onclick="confirmDeleteAccount()">Удалить данные</button></section>
   </div>`;
   queueMicrotask(()=>{
@@ -67,17 +73,41 @@ export function renderSettings(){
   });
 }
 
+function moveReorderByDirection(type,key,dir){
+  const moved = type==='home'?moveHomeItem(key,dir):type==='task'?moveTaskItem(key,dir):moveCalendarItem(key,dir);
+  if(!moved) return;
+  renderSettings();
+  if(type==='home') window.renderDashboard?.();
+  else if(type==='task') window.renderTasksPage?.();
+  else window.renderCalendar?.();
+}
+
 export function openReorderMenu(type,key){
   const options=type==='home'?getHomeOrder():type==='task'?getTaskOrder():getCalendarOrder();
-  const labels=type==='calendar'?CALENDAR_LABELS:SUB_LABELS; const i=options.indexOf(key);
-  const modal=document.createElement('div'); modal.className='modal-bg reorder-bg'; modal.onclick=e=>{if(e.target===modal)modal.remove()};
-  modal.innerHTML=`<div class="modal apple-sheet"><div class="modal-handle"></div><div class="sheet-title-row"><div><div class="meta-small">Порядок</div><h2>${labels[key]}</h2></div><button class="sheet-close" onclick="this.closest('.modal-bg').remove()">×</button></div><div class="apple-action-list">${options.map((k,idx)=>`<button class="apple-action-row ${k===key?'selected':''}" onclick="${idx===i?'':`moveReorderItem('${type}','${key}',${idx})`};${idx===i?'':`this.closest('.modal-bg').remove()`}"><span class="row-number">${idx+1}</span><span>${labels[k]}</span>${k===key?'<span class="apple-check">✓</span>':''}</button>`).join('')}</div><button class="apple-cancel" onclick="this.closest('.modal-bg').remove()">Отмена</button></div>`;
+  const labels=type==='home'?HOME_LABELS:type==='task'?SUB_LABELS:CALENDAR_LABELS;
+  const i=options.indexOf(key);
+  const modal=document.createElement('div'); modal.className='modal-bg reorder-bg'; modal.addEventListener('click',e=>{if(e.target===modal)modal.remove()});
+  modal.innerHTML=`<div class="modal apple-sheet"><div class="modal-handle"></div><div class="sheet-title-row"><div><div class="meta-small">Порядок</div><h2>${labels[key]||key}</h2></div><button class="sheet-close" type="button" aria-label="Закрыть">×</button></div><div class="apple-action-list">${options.map((k,idx)=>`<button type="button" class="apple-action-row ${k===key?'selected':''}" data-target-index="${idx}"><span class="row-number">${idx+1}</span><span>${labels[k]||k}</span>${k===key?'<span class="apple-check">✓</span>':''}</button>`).join('')}</div><button class="apple-cancel" type="button">Отмена</button></div>`;
   document.body.appendChild(modal);
+  modal.querySelector('.sheet-close')?.addEventListener('click',()=>modal.remove());
+  modal.querySelector('.apple-cancel')?.addEventListener('click',()=>modal.remove());
+  modal.querySelectorAll('[data-target-index]').forEach(btn=>btn.addEventListener('click',()=>{
+    const targetIndex=Number(btn.dataset.targetIndex);
+    if(targetIndex!==i) moveReorderItem(type,key,targetIndex); else modal.remove();
+  }));
 }
+
 export function moveReorderItem(type,key,targetIndex){
-  const options=type==='home'?getHomeOrder():type==='task'?getTaskOrder():getCalendarOrder(); const next=[...options]; const from=next.indexOf(key); if(from<0||targetIndex<0||targetIndex>=next.length)return; next.splice(from,1); next.splice(targetIndex,0,key);
-  localStorage.setItem(type==='home'?'homeOrder':type==='task'?'taskOrder':'calendarOrder',JSON.stringify(next));
-  document.querySelector('.reorder-bg')?.remove(); renderSettings(); window.renderCalendar?.(); window.renderDashboard?.();
+  const options=type==='home'?getHomeOrder():type==='task'?getTaskOrder():getCalendarOrder();
+  const next=[...options], from=next.indexOf(key);
+  if(from<0||targetIndex<0||targetIndex>=next.length||from===targetIndex)return;
+  next.splice(from,1); next.splice(targetIndex,0,key);
+  if(type==='home') setHomeOrder(next); else if(type==='task') setTaskOrder(next); else setCalendarOrder(next);
+  document.querySelector('.reorder-bg')?.remove();
+  renderSettings();
+  if(type==='home') window.renderDashboard?.();
+  else if(type==='task') window.renderTasksPage?.();
+  else window.renderCalendar?.();
 }
 
 export function setAppLang(lang){ state.lang=lang; localStorage.setItem('lang',lang); renderSettings(); }
