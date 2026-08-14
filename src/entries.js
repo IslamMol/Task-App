@@ -129,13 +129,30 @@ export async function toggleHabit(id, el){
 
 export async function updatePage(id, val){
   const e = state.entries.find(x => x.id === id);
-  if(!e) return;
-  e.progress_current = Number(val);
+  if(!e || e.type !== 'book') return;
+
+  const total = Number(e.progress_total) || 0;
+  let current = Number(val);
+  if(!Number.isFinite(current)) return;
+  current = Math.max(0, Math.floor(current));
+  if(total > 0) current = Math.min(current, total);
+
+  e.progress_current = current;
   e.updated_at = new Date().toISOString();
-  renderList();
   cacheEntries([e]);
   enqueue('entries', 'update', { id, progress_current: e.progress_current, updated_at: e.updated_at });
+
+  // Прогресс хранится в самой записи книги: он не сбрасывается после
+  // перерисовки, перезагрузки или перехода между разделами.
+  renderList();
+  if(state.mainTab === 'tasks' && window.renderTasksPage){
+    window.renderTasksPage('book');
+  }
+  if(window.renderDashboard){
+    window.renderDashboard();
+  }
 }
+
 
 export async function deleteEntry(id){
   state.entries = state.entries.filter(e => e.id !== id);
