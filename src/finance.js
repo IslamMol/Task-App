@@ -36,6 +36,84 @@ export async function loadFinance(){
   }
 }
 
+function weekRange(){
+  const now = new Date();
+  const day = (now.getDay() + 6) % 7; // понедельник = 0
+  const start = new Date(now); start.setDate(now.getDate() - day); start.setHours(0,0,0,0);
+  const end = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23,59,59,999);
+  return [start, end];
+}
+function monthRangeFull(){
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23,59,59,999);
+  return [start, end];
+}
+function yearRange(){
+  const now = new Date();
+  return [new Date(now.getFullYear(), 0, 1), new Date(now.getFullYear(), 11, 31, 23,59,59,999)];
+}
+const PERIOD_LABEL = { week: 'неделя', month: 'месяц', year: 'год' };
+
+// Скачивает .xlsx с двумя листами: построчные операции за период и
+// сводка по категориям с итогами. Числа — настоящие числа (не строки
+// с приклеенным знаком валюты), чтобы Excel мог сам с ними считать.
+export function exportFinanceReport(period){
+  const [start, end] = period === 'week' ? weekRange() : period === 'year' ? yearRange() : monthRangeFull();
+  const rows = state.transactions
+    .filter(t => { const d = new Date(t.tx_date); return d >= start && d <= end; })
+    .sort((a,b) => new Date(a.tx_date) - new Date(b.tx_date));
+
+  if(!rows.length){
+    alert('За этот период пока нет операций');
+    return;
+  }
+
+  const sym = getCurrencySymbol();
+
+  const sheet1 = [
+    ['Дата', 'Тип', 'Категория', 'Сумма', 'Валюта', 'Описание'],
+    ...rows.map(t => [
+      new Date(t.tx_date).toLocaleDateString('ru-RU'),
+      t.type === 'income' ? 'Доход' : 'Расход',
+      t.category || '—',
+      Number(t.amount),
+      sym,
+      t.description || '',
+    ]),
+  ];
+
+  const byCategory = {};
+  rows.forEach(t => {
+    const key = `${t.type}|${t.category || '—'}`;
+    byCategory[key] = (byCategory[key] || 0) + Number(t.amount);
+  });
+  const totalIncome = rows.filter(t => t.type === 'income').reduce((s,t) => s + Number(t.amount), 0);
+  const totalExpense = rows.filter(t => t.type === 'expense').reduce((s,t) => s + Number(t.amount), 0);
+
+  const sheet2 = [
+    ['Тип', 'Категория', 'Сумма'],
+    ...Object.entries(byCategory)
+      .sort((a,b) => b[1] - a[1])
+      .map(([key, sum]) => { const [type, cat] = key.split('|'); return [type === 'income' ? 'Доход' : 'Расход', cat, sum]; }),
+    [],
+    ['', 'Итого доход', totalIncome],
+    ['', 'Итого расход', totalExpense],
+    ['', 'Баланс', totalIncome - totalExpense],
+  ];
+
+  const wb = XLSX.utils.book_new();
+  const ws1 = XLSX.utils.aoa_to_sheet(sheet1);
+  ws1['!cols'] = [{wch:12},{wch:9},{wch:18},{wch:12},{wch:8},{wch:28}];
+  const ws2 = XLSX.utils.aoa_to_sheet(sheet2);
+  ws2['!cols'] = [{wch:9},{wch:18},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Операции');
+  XLSX.utils.book_append_sheet(wb, ws2, 'Сводка');
+
+  const fmt = d => d.toISOString().slice(0,10);
+  XLSX.writeFile(wb, `Финансы_${PERIOD_LABEL[period]}_${fmt(start)}_${fmt(end)}.xlsx`);
+}
+
 function monthStart(){
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -104,6 +182,7 @@ function txRowHtml(t){
 export function renderFinancePage(){
   const root = document.getElementById('financeRoot');
   if(!root) return;
+  ensureCategoryChipStyles();
   const history = state.transactions.slice(0, 50);
   root.innerHTML = `<div class="screen-stack">
     <div class="page-heading-row">
@@ -111,6 +190,14 @@ export function renderFinancePage(){
       <button class="primary-icon-button" onclick="openFinanceInfo('expense')">＋</button>
     </div>
     <section>${financeSnapshot()}</section>
+    <section style="margin-top:14px">
+      <div class="section-head"><h2>Отчёт</h2></div>
+      <div class="report-buttons" style="margin-top:10px">
+        <button class="secondary-pill" onclick="exportFinanceReport('week')">За неделю</button>
+        <button class="secondary-pill" onclick="exportFinanceReport('month')">За месяц</button>
+        <button class="secondary-pill" onclick="exportFinanceReport('year')">За год</button>
+      </div>
+    </section>
     <section style="margin-top:14px">
       <div class="section-head"><h2>История</h2></div>
       <div style="margin-top:10px">
@@ -132,6 +219,8 @@ function ensureCategoryChipStyles(){
     .category-chip.active{background:var(--gesso-accent);border-color:var(--gesso-accent);color:#fff;box-shadow:0 3px 10px rgba(75,90,140,.28)}
     .category-grid.shake{animation:finance-chip-shake .4s ease}
     @keyframes finance-chip-shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+    .report-buttons{display:flex;gap:8px}
+    .report-buttons .secondary-pill{flex:1;text-align:center}
   `;
   document.head.appendChild(style);
 }
