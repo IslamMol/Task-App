@@ -10,14 +10,15 @@ export const db = new Dexie('put_app_db');
 // version(2), а не правка version(1) — так Dexie понимает, что это
 // осознанное обновление схемы (на будущее, если появятся ещё пользователи
 // с уже созданной локальной базой версии 1).
-db.version(2).stores({
+// version(3): добавилась таблица Finance (transactions). Dexie сам
+// обновит схему на устройстве при следующем открытии, старые данные
+// (entries/compass/...) не затрагиваются.
+db.version(3).stores({
   entries: '&id, type, user_id, updated_at, goal_id',
   compass: '&id, kind, user_id',
   compass_entries: '&id, compass_id, user_id, created_at',
-  // Очередь несинхронизированных изменений.
-  // entity — 'entries' | 'compass' | 'compass_entries'
-  // op     — 'insert' | 'update' | 'delete'
   sync_queue: '++id, created_at, entity',
+  transactions: '&id, type, user_id, tx_date',
 });
 
 export async function cacheEntries(entries){
@@ -63,6 +64,25 @@ export async function readCompassEntriesFromCache(compassId){
   try { return await db.compass_entries.where('compass_id').equals(compassId).toArray(); }
   catch (err) {
     console.warn('IndexedDB: не удалось прочитать compass_entries из кэша', err);
+    return [];
+  }
+}
+
+export async function cacheTransactions(rows){
+  try { await db.transactions.bulkPut(rows); }
+  catch (err) { console.warn('IndexedDB: не удалось сохранить transactions локально', err); }
+}
+export async function removeTransactionFromCache(id){
+  try { await db.transactions.delete(id); }
+  catch (err) { console.warn('IndexedDB: не удалось удалить transaction локально', err); }
+}
+export async function readTransactionsFromCache(){
+  try {
+    const rows = await db.transactions.toArray();
+    rows.sort((a,b) => new Date(b.tx_date) - new Date(a.tx_date));
+    return rows;
+  } catch (err) {
+    console.warn('IndexedDB: не удалось прочитать transactions из кэша', err);
     return [];
   }
 }
