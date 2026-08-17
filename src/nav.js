@@ -1,7 +1,8 @@
 import { state } from './state.js';
 import { renderCalendar } from './pages/calendar.js';
 import { renderSettings } from './pages/settings.js';
-import { renderDashboard, renderFinancePage, renderTasksPage } from './dashboard.js';
+import { renderDashboard, renderTasksPage } from './dashboard.js';
+import { renderFinancePage } from './finance.js';
 
 export const MAIN_TABS = ['home','tasks','calendar','finance','settings'];
 export function switchMainTab(tab){

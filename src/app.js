@@ -3,7 +3,8 @@ import { init, toggleAuthMode, signIn, signUp } from './auth.js';
 import { openCompass, saveCompass, savePathTitle, addJournalEntry } from './compass.js';
 import { toggleDone, toggleHabit, updatePage, deleteEntry, openAdd, saveNew, pickCategory } from './entries.js';
 import { switchMainTab, switchHomeSub, switchTaskSub, initPagerSync } from './nav.js';
-import { renderDashboard, renderTasksPage, renderFinancePage, openFinanceInfo, openAddForQuest, openHabitsSheet, setActiveAdd } from './dashboard.js';
+import { renderDashboard, renderTasksPage, openAddForQuest, openHabitsSheet, setActiveAdd } from './dashboard.js';
+import { renderFinancePage, openFinanceInfo, saveTransaction, deleteTransaction } from './finance.js';
 import { onSyncStatusChange, syncState } from './db/sync.js';
 import { renderCalendar, openEventAdd, saveNewEvent, saveEventEdit, editEvent, deleteCalendarEvent, addEventToPhoneCalendar, selectCalendarDate, changeCalendarMonth, setRelativeDay, goToday } from './pages/calendar.js';
 import { handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings } from './pages/settings.js';
@@ -18,7 +19,7 @@ Object.assign(window, {
   openCompass, saveCompass, savePathTitle, addJournalEntry,
   toggleDone, toggleHabit, updatePage, deleteEntry, openAdd, saveNew, pickCategory,
   switchMainTab, switchHomeSub, switchTaskSub,
-  renderDashboard, renderTasksPage, renderFinancePage, openFinanceInfo, openAddForQuest, openHabitsSheet, setActiveAdd,
+  renderDashboard, renderTasksPage, renderFinancePage, openFinanceInfo, saveTransaction, deleteTransaction, openAddForQuest, openHabitsSheet, setActiveAdd,
   renderCalendar, openEventAdd, saveNewEvent, saveEventEdit, editEvent, deleteCalendarEvent, addEventToPhoneCalendar, selectCalendarDate, changeCalendarMonth, setRelativeDay, goToday,
   handleAvatarUpload, usePresetAvatar, getCurrencySymbol, setCurrency, setCustomCurrency, openReorderMenu, moveReorderItem, setAppLang, changeEmail, changePassword, logout, confirmDeleteAccount, renderSettings,
   moveHomeItem, moveTaskItem, moveCalendarItem,

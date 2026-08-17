@@ -11,6 +11,7 @@ export const state = {
   session: null,
   entries: [],
   compassItems: [],
+  transactions: [],
   authMode: 'signin',
 
   lang: localStorage.getItem('lang') || 'ru',

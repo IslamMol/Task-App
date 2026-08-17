@@ -4,6 +4,7 @@ import { applyTheme } from './theme.js';
 import { ensureCompass, renderCompass } from './compass.js';
 import { loadEntries, renderList } from './entries.js';
 import { renderDashboard } from './dashboard.js';
+import { loadFinance } from './finance.js';
 import { switchMainTab, switchHomeSub, switchTaskSub } from './nav.js';
 
 export async function init(){
@@ -60,6 +61,7 @@ export async function showApp(){
   applyTheme();
   await ensureCompass();
   await loadEntries();
+  await loadFinance();
   renderCompass();
   switchHomeSub(state.homeSub);
   switchTaskSub(state.taskSub);
