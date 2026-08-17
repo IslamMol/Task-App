@@ -7,6 +7,21 @@ import {
   cacheTransactions, readTransactionsFromCache, removeTransactionFromCache,
 } from './db/indexeddb.js';
 
+const EXPENSE_CATEGORIES = [
+  ['Еда','🍔'], ['Транспорт','🚗'], ['Учёба','📚'], ['Связь','📶'],
+  ['Развлечения','🎮'], ['По мелочи','🧾'], ['Подписки','🔁'], ['Постоянные','📌'],
+  ['Сезонные','🍂'], ['Непредвиденное','⚠️'], ['Семья и дети','👨‍👩‍👧'],
+  ['Здоровье','💊'], ['Домашние','🏠'],
+];
+const INCOME_CATEGORIES = [
+  ['Зарплата','💼'], ['Премии','🏆'], ['Бонусы','🎁'], ['Отпускные','🏖️'],
+  ['Калым','🤝'], ['Продажа','💰'], ['Подарки','🎉'], ['Пособия','🧑‍🍼'], ['Пенсия','👴'],
+];
+
+// Выбранная категория в текущем открытом окне добавления операции —
+// храним отдельно от DOM, чтобы не завязываться на текстовый инпут.
+let selectedCategory = null;
+
 function fmt(n){ return Number(n||0).toLocaleString('ru-RU'); }
 
 export async function loadFinance(){
@@ -105,7 +120,38 @@ export function renderFinancePage(){
   </div>`;
 }
 
+function ensureCategoryChipStyles(){
+  if(document.getElementById('finance-chip-style')) return;
+  const style = document.createElement('style');
+  style.id = 'finance-chip-style';
+  style.textContent = `
+    .category-grid{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
+    .category-chip{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:9999px;background:var(--gesso-surface);border:1px solid var(--gesso-divider);color:var(--gesso-fg);font-size:12px;font-weight:700;transition:transform .12s ease,background .16s ease,color .16s ease,border-color .16s ease;-webkit-tap-highlight-color:transparent}
+    .category-chip:active{transform:scale(.94)}
+    .category-chip .chip-icon{font-size:14px;line-height:1}
+    .category-chip.active{background:var(--gesso-accent);border-color:var(--gesso-accent);color:#fff;box-shadow:0 3px 10px rgba(75,90,140,.28)}
+    .category-grid.shake{animation:finance-chip-shake .4s ease}
+    @keyframes finance-chip-shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+  `;
+  document.head.appendChild(style);
+}
+
+function categoryChipsHtml(kind){
+  const list = kind === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  return `<div class="category-grid" id="categoryGrid">
+    ${list.map(([name, icon]) => `<button type="button" class="category-chip" onclick="selectFinanceCategory('${name}', this)"><span class="chip-icon">${icon}</span>${escapeHtml(name)}</button>`).join('')}
+  </div>`;
+}
+
+export function selectFinanceCategory(name, btn){
+  selectedCategory = name;
+  btn.parentElement.querySelectorAll('.category-chip').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+}
+
 export function openFinanceInfo(kind = 'expense'){
+  selectedCategory = null;
+  ensureCategoryChipStyles();
   const title = kind === 'expense' ? 'Расход' : 'Доход';
   const sym = getCurrencySymbol();
   const modal = document.createElement('div');
@@ -115,8 +161,9 @@ export function openFinanceInfo(kind = 'expense'){
     <div class="modal-handle"></div>
     <h2>${title}</h2>
     <label>Сумма (${sym})<input type="number" id="financeAmount" inputmode="decimal" placeholder="0"></label>
-    <label>Категория<input id="financeCategory" placeholder="Еда, транспорт…"></label>
-    <label>Описание<input id="financeDesc" placeholder="Необязательно"></label>
+    <label>Категория</label>
+    ${categoryChipsHtml(kind)}
+    <label style="margin-top:12px">Описание<input id="financeDesc" placeholder="Необязательно"></label>
     <label>Дата<input type="date" id="financeDate" value="${new Date().toISOString().slice(0,10)}"></label>
     <button class="primary" onclick="saveTransaction('${kind}')">Сохранить</button>
     <button class="ghost" onclick="this.closest('.modal-bg').remove()">Отмена</button>
@@ -127,12 +174,17 @@ export function openFinanceInfo(kind = 'expense'){
 export async function saveTransaction(kind){
   const amount = Number(document.getElementById('financeAmount').value);
   if(!amount || amount <= 0) return;
+  if(!selectedCategory){
+    document.getElementById('categoryGrid')?.classList.add('shake');
+    setTimeout(() => document.getElementById('categoryGrid')?.classList.remove('shake'), 400);
+    return;
+  }
   const now = new Date().toISOString();
   const row = {
     id: crypto.randomUUID(),
     type: kind,
     amount,
-    category: document.getElementById('financeCategory').value.trim() || null,
+    category: selectedCategory,
     description: document.getElementById('financeDesc').value.trim() || null,
     tx_date: document.getElementById('financeDate').value || now.slice(0,10),
     user_id: state.session.user.id,
